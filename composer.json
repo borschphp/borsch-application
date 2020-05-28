@@ -1,0 +1,31 @@
+{
+  "name": "borschphp/application",
+  "description": "Borsch Framework application.",
+  "homepage": "http://github.com/borschphp/borsck-application",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Alexandre DEBUSSCHERE",
+      "email": "zizilex@gmail.com"
+    }
+  ],
+  "require": {
+    "borschphp/requesthandler": "0.1",
+    "borschphp/router": "0.1",
+    "borschphp/container": "0.1"
+  },
+  "autoload": {
+    "psr-4": {
+      "Borsch\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "BorschTest\\": "tests/"
+    }
+  },
+  "require-dev": {
+    "laminas/laminas-diactoros": "2.2.3",
+    "phpunit/phpunit": "^8"
+  }
+}
