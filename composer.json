@@ -13,7 +13,7 @@
     "php": "^7.2",
     "borschphp/requesthandler": "^0.1",
     "borschphp/router": "^0.1",
-    "borschphp/container": "^0.1"
+    "borschphp/container": "^0.2"
   },
   "autoload": {
     "psr-4": {
