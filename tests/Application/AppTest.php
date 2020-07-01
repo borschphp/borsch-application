@@ -17,6 +17,8 @@ use BorschTest\Middleware\DispatchMiddleware;
 use BorschTest\Middleware\NotFoundHandlerMiddleware;
 use BorschTest\Middleware\PipedMiddleware;
 use BorschTest\Middleware\RouteMiddleware;
+use BorschTest\Mockup\AMiddleware;
+use BorschTest\Mockup\BMiddleware;
 use BorschTest\Mockup\TestHandler;
 use Laminas\Diactoros\ServerRequestFactory;
 use PHPUnit\Framework\TestCase;
@@ -321,5 +323,53 @@ class AppTest extends TestCase
         $this->assertInstanceOf(ResponseInterface::class, $response);
         $this->assertNotEquals(404, $response->getStatusCode());
         $this->assertEquals(TestHandler::class.'::handle', $response->getBody()->getContents());
+    }
+
+    public function testStackedHandlersGetFinalResponse()
+    {
+        $server_request = (new ServerRequestFactory())->createServerRequest(
+            'GET',
+            'https://tests.com/to/test'
+        );
+
+        $this->app->pipe(RouteMiddleware::class);
+        $this->app->pipe(DispatchMiddleware::class);
+        $this->app->pipe(NotFoundHandlerMiddleware::class);
+
+        $this->app->get( '/to/test', [
+            AMiddleware::class,
+            TestHandler::class
+        ]);
+
+        $response = $this->app->runAndGetResponse($server_request);
+
+        $this->assertInstanceOf(ResponseInterface::class, $response);
+        $this->assertNotEquals(404, $response->getStatusCode());
+        $this->assertEquals(TestHandler::class.'::handle', $response->getBody()->getContents());
+    }
+
+    public function testStackedHandlersGetMiddlewareResponse()
+    {
+        $server_request = (new ServerRequestFactory())->createServerRequest(
+            'GET',
+            'https://tests.com/to/test'
+        );
+
+        $this->app->pipe(RouteMiddleware::class);
+        $this->app->pipe(DispatchMiddleware::class);
+        $this->app->pipe(NotFoundHandlerMiddleware::class);
+
+        $this->app->get( '/to/test', [
+            AMiddleware::class,
+            BMiddleware::class,
+            TestHandler::class
+        ]);
+
+        $response = $this->app->runAndGetResponse($server_request);
+
+        $this->assertInstanceOf(ResponseInterface::class, $response);
+        $this->assertNotEquals(404, $response->getStatusCode());
+        $this->assertEquals(BMiddleware::class.'::process', $response->getBody()->getContents());
+        $this->assertEquals('TEST', $response->getHeaderLine('X-Test'));
     }
 }
