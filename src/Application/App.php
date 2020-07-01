@@ -241,4 +241,20 @@ class App implements ApplicationInterface
             $name
         ));
     }
+
+    /**
+     * @param string[] $methods
+     * @param string $path
+     * @param string $middleware
+     * @param string|null $name
+     */
+    public function match(array $methods, string $path, string $middleware, ?string $name = null): void
+    {
+        $this->router->addRoute(new Route(
+            $methods,
+            $path,
+            $this->container->get($middleware),
+            $name
+        ));
+    }
 }

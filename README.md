@@ -8,7 +8,7 @@ This package is part of the Borsch Framework.
 
 Via [composer](https://getcomposer.org/) :
 
-`composer require borsch/application`
+`composer require borschphp/application`
 
 ## Usage
 

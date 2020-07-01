@@ -302,4 +302,24 @@ class AppTest extends TestCase
         $this->assertNotEquals(404, $response->getStatusCode());
         $this->assertEquals(TestHandler::class.'::handle', $response->getBody()->getContents());
     }
+
+    public function testMatch()
+    {
+        $server_request = (new ServerRequestFactory())->createServerRequest(
+            'GET',
+            'https://tests.com/to/test'
+        );
+
+        $this->app->pipe(RouteMiddleware::class);
+        $this->app->pipe(DispatchMiddleware::class);
+        $this->app->pipe(NotFoundHandlerMiddleware::class);
+
+        $this->app->match(['GET', 'POST', 'PUT'], '/to/test', TestHandler::class);
+
+        $response = $this->app->runAndGetResponse($server_request);
+
+        $this->assertInstanceOf(ResponseInterface::class, $response);
+        $this->assertNotEquals(404, $response->getStatusCode());
+        $this->assertEquals(TestHandler::class.'::handle', $response->getBody()->getContents());
+    }
 }
