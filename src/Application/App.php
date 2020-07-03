@@ -78,34 +78,16 @@ class App implements ApplicationInterface
     }
 
     /**
-     * @param string|string[] $middleware
-     * @return RequestHandlerInterface
-     */
-    protected function prepareRequestHandler($middleware): RequestHandlerInterface
-    {
-        if (is_array($middleware)) {
-            $handler = new StackedRequestHandler();
-            foreach ($middleware as $mid) {
-                $handler->push($this->container->get($mid));
-            }
-
-            return $handler;
-        }
-
-        return $this->container->get($middleware);
-    }
-
-    /**
      * @param string $path
-     * @param string|string[] $middleware
+     * @param string $middleware
      * @param string|null $name
      */
-    public function get(string $path, $middleware, ?string $name = null): void
+    public function get(string $path, string $middleware, ?string $name = null): void
     {
         $this->router->addRoute(new Route(
             ['GET'],
             $path,
-            $this->prepareRequestHandler($middleware),
+            $this->container->get($middleware),
             $name
         ));
     }
@@ -120,142 +102,142 @@ class App implements ApplicationInterface
         $this->router->addRoute(new Route(
             ['POST'],
             $path,
-            $this->prepareRequestHandler($middleware),
+            $this->container->get($middleware),
             $name
         ));
     }
 
     /**
      * @param string $path
-     * @param string|string[] $middleware
+     * @param string $middleware
      * @param string|null $name
      */
-    public function put(string $path, $middleware, ?string $name = null): void
+    public function put(string $path, string $middleware, ?string $name = null): void
     {
         $this->router->addRoute(new Route(
             ['PUT'],
             $path,
-            $this->prepareRequestHandler($middleware),
+            $this->container->get($middleware),
             $name
         ));
     }
 
     /**
      * @param string $path
-     * @param string|string[] $middleware
+     * @param string $middleware
      * @param string|null $name
      */
-    public function delete(string $path, $middleware, ?string $name = null): void
+    public function delete(string $path, string $middleware, ?string $name = null): void
     {
         $this->router->addRoute(new Route(
             ['DELETE'],
             $path,
-            $this->prepareRequestHandler($middleware),
+            $this->container->get($middleware),
             $name
         ));
     }
 
     /**
      * @param string $path
-     * @param string|string[] $middleware
+     * @param string $middleware
      * @param string|null $name
      */
-    public function patch(string $path, $middleware, ?string $name = null): void
+    public function patch(string $path, string $middleware, ?string $name = null): void
     {
         $this->router->addRoute(new Route(
             ['PATCH'],
             $path,
-            $this->prepareRequestHandler($middleware),
+            $this->container->get($middleware),
             $name
         ));
     }
 
     /**
      * @param string $path
-     * @param string|string[] $middleware
+     * @param string $middleware
      * @param string|null $name
      */
-    public function head(string $path, $middleware, ?string $name = null): void
+    public function head(string $path, string $middleware, ?string $name = null): void
     {
         $this->router->addRoute(new Route(
             ['HEAD'],
             $path,
-            $this->prepareRequestHandler($middleware),
+            $this->container->get($middleware),
             $name
         ));
     }
 
     /**
      * @param string $path
-     * @param string|string[] $middleware
+     * @param string $middleware
      * @param string|null $name
      */
-    public function options(string $path, $middleware, ?string $name = null): void
+    public function options(string $path, string $middleware, ?string $name = null): void
     {
         $this->router->addRoute(new Route(
             ['OPTIONS'],
             $path,
-            $this->prepareRequestHandler($middleware),
+            $this->container->get($middleware),
             $name
         ));
     }
 
     /**
      * @param string $path
-     * @param string|string[] $middleware
+     * @param string $middleware
      * @param string|null $name
      */
-    public function purge(string $path, $middleware, ?string $name = null): void
+    public function purge(string $path, string $middleware, ?string $name = null): void
     {
         $this->router->addRoute(new Route(
             ['PURGE'],
             $path,
-            $this->prepareRequestHandler($middleware),
+            $this->container->get($middleware),
             $name
         ));
     }
 
     /**
      * @param string $path
-     * @param string|string[] $middleware
+     * @param string $middleware
      * @param string|null $name
      */
-    public function trace(string $path, $middleware, ?string $name = null): void
+    public function trace(string $path, string $middleware, ?string $name = null): void
     {
         $this->router->addRoute(new Route(
             ['TRACE'],
             $path,
-            $this->prepareRequestHandler($middleware),
+            $this->container->get($middleware),
             $name
         ));
     }
 
     /**
      * @param string $path
-     * @param string|string[] $middleware
+     * @param string $middleware
      * @param string|null $name
      */
-    public function connect(string $path, $middleware, ?string $name = null): void
+    public function connect(string $path, string $middleware, ?string $name = null): void
     {
         $this->router->addRoute(new Route(
             ['CONNECT'],
             $path,
-            $this->prepareRequestHandler($middleware),
+            $this->container->get($middleware),
             $name
         ));
     }
 
     /**
      * @param string $path
-     * @param string|string[] $middleware
+     * @param string $middleware
      * @param string|null $name
      */
-    public function any(string $path, $middleware, ?string $name = null): void
+    public function any(string $path, string $middleware, ?string $name = null): void
     {
         $this->router->addRoute(new Route(
             ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS', 'PURGE', 'TRACE', 'CONNECT'],
             $path,
-            $this->prepareRequestHandler($middleware),
+            $this->container->get($middleware),
             $name
         ));
     }
@@ -263,15 +245,15 @@ class App implements ApplicationInterface
     /**
      * @param string[] $methods
      * @param string $path
-     * @param string|string[] $middleware
+     * @param string $middleware
      * @param string|null $name
      */
-    public function match(array $methods, string $path, $middleware, ?string $name = null): void
+    public function match(array $methods, string $path, string $middleware, ?string $name = null): void
     {
         $this->router->addRoute(new Route(
             $methods,
             $path,
-            $this->prepareRequestHandler($middleware),
+            $this->container->get($middleware),
             $name
         ));
     }
