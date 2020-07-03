@@ -21,10 +21,12 @@ interface ApplicationInterface
      *
      * The middleware will be fetched from the container, therefore only give the container identifier.
      *
+     * An array of middleware can be provided for the second parameter.
+     *
      * @param string $middleware_or_path
-     * @param null|string $middleware
+     * @param string|string[] $middleware
      */
-    public function pipe(string $middleware_or_path, ?string $middleware = null): void;
+    public function pipe(string $middleware_or_path, $middleware = null): void;
 
     /**
      * Run the application.
@@ -37,98 +39,98 @@ interface ApplicationInterface
      * Add a GET Route to the application router instance.
      *
      * @param string $path
-     * @param string $middleware
+     * @param string $handler
      * @param string|null $name
      */
-    public function get(string $path, string $middleware, ?string $name = null): void;
+    public function get(string $path, string $handler, ?string $name = null): void;
 
     /**
      * Add a POST Route to the application router instance.
      *
      * @param string $path
-     * @param string $middleware
+     * @param string $handler
      * @param string|null $name
      */
-    public function post(string $path, string $middleware, ?string $name = null): void;
+    public function post(string $path, string $handler, ?string $name = null): void;
 
     /**
      * Add a PUT Route to the application router instance.
      *
      * @param string $path
-     * @param string $middleware
+     * @param string $handler
      * @param string|null $name
      */
-    public function put(string $path, string $middleware, ?string $name = null): void;
+    public function put(string $path, string $handler, ?string $name = null): void;
 
     /**
      * Add a DELETE Route to the application router instance.
      *
      * @param string $path
-     * @param string $middleware
+     * @param string $handler
      * @param string|null $name
      */
-    public function delete(string $path, string $middleware, ?string $name = null): void;
+    public function delete(string $path, string $handler, ?string $name = null): void;
 
     /**
      * Add a PATH Route to the application router instance.
      *
      * @param string $path
-     * @param string $middleware
+     * @param string $handler
      * @param string|null $name
      */
-    public function patch(string $path, string $middleware, ?string $name = null): void;
+    public function patch(string $path, string $handler, ?string $name = null): void;
 
     /**
      * Add a HEAD Route to the application router instance.
      *
      * @param string $path
-     * @param string $middleware
+     * @param string $handler
      * @param string|null $name
      */
-    public function head(string $path, string $middleware, ?string $name = null): void;
+    public function head(string $path, string $handler, ?string $name = null): void;
 
     /**
      * Add an OPTIONS Route to the application router instance.
      *
      * @param string $path
-     * @param string $middleware
+     * @param string $handler
      * @param string|null $name
      */
-    public function options(string $path, string $middleware, ?string $name = null): void;
+    public function options(string $path, string $handler, ?string $name = null): void;
 
     /**
      * Add an PURGE Route to the application router instance.
      *
      * @param string $path
-     * @param string $middleware
+     * @param string $handler
      * @param string|null $name
      */
-    public function purge(string $path, string $middleware, ?string $name = null): void;
+    public function purge(string $path, string $handler, ?string $name = null): void;
 
     /**
      * Add an TRACE Route to the application router instance.
      *
      * @param string $path
-     * @param string $middleware
+     * @param string $handler
      * @param string|null $name
      */
-    public function trace(string $path, string $middleware, ?string $name = null): void;
+    public function trace(string $path, string $handler, ?string $name = null): void;
 
     /**
      * Add an CONNECT Route to the application router instance.
      *
      * @param string $path
-     * @param string $middleware
+     * @param string $handler
      * @param string|null $name
      */
-    public function connect(string $path, string $middleware, ?string $name = null): void;
+    public function connect(string $path, string $handler, ?string $name = null): void;
 
     /**
      * Add a Route to all methods to the application router instance.
      *
      * @param string $path
-     * @param string $middleware
+     * @param string $handler
      * @param string|null $name
      */
-    public function any(string $path, string $middleware, ?string $name = null): void;
+    public function any(string $path, string $handler, ?string $name = null): void;
 }

@@ -17,10 +17,13 @@ use BorschTest\Middleware\DispatchMiddleware;
 use BorschTest\Middleware\NotFoundHandlerMiddleware;
 use BorschTest\Middleware\PipedMiddleware;
 use BorschTest\Middleware\RouteMiddleware;
+use BorschTest\Mockup\AMiddleware;
+use BorschTest\Mockup\BMiddleware;
 use BorschTest\Mockup\TestHandler;
 use Laminas\Diactoros\ServerRequestFactory;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
+use TypeError;
 
 class AppTest extends TestCase
 {
@@ -81,6 +84,40 @@ class AppTest extends TestCase
 
         $this->assertInstanceOf(ResponseInterface::class, $response);
         $this->assertEquals(PipedMiddleware::class.'::process', $response->getBody()->getContents());
+    }
+
+    public function testPipeWithSegregatedPathAndArrayOfMiddlewares()
+    {
+        $server_request = (new ServerRequestFactory())->createServerRequest(
+            'GET',
+            'https://tests.com/to/test'
+        );
+
+        $this->app->pipe( '/to/', [
+            AMiddleware::class,
+            BMiddleware::class
+        ]);
+
+        $this->app->pipe(RouteMiddleware::class);
+        $this->app->pipe(DispatchMiddleware::class);
+        $this->app->pipe(NotFoundHandlerMiddleware::class);
+
+        $response = $this->app->runAndGetResponse($server_request);
+
+        $this->assertInstanceOf(ResponseInterface::class, $response);
+        $this->assertEquals(BMiddleware::class.'::process', $response->getBody()->getContents());
+        $this->assertEquals('TEST', $response->getHeaderLine('X-Test'));
+    }
+
+    public function testNoSegregatedPathAndArrayOfMiddlewaresReturnsException()
+    {
+        $this->expectException(TypeError::class);
+
+        $this->app->pipe([
+            RouteMiddleware::class,
+            DispatchMiddleware::class,
+            NotFoundHandlerMiddleware::class
+        ]);
     }
 
     public function testDelete()
