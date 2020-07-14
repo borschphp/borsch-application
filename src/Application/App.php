@@ -57,11 +57,11 @@ class App implements ApplicationInterface
             return;
         }
 
-        $middleware = is_array($middleware) ?
-            new PipePathStackMiddleware($path, array_map([$this->container, 'get'], $middleware)) :
-            new PipePathMiddleware($path, $this->container->get($middleware));
-
-        $this->request_handler->middleware($middleware);
+        foreach ((array)$middleware as $middle) {
+            $this->request_handler->middleware(
+                new PipePathMiddleware($path, $this->container->get($middle))
+            );
+        }
     }
 
     /**
