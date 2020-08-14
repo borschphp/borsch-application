@@ -57,8 +57,9 @@ class PipePathMiddlewareTest extends TestCase
             'https://tests.com/to/test'
         );
 
+        $container = new Container();
         $handler = new RequestHandler();
-        $middleware = new PipePathMiddleware('/to', new PipedMiddleware());
+        $middleware = new PipePathMiddleware('/to', PipedMiddleware::class, $container);
 
         $response = $middleware->process($request, $handler);
 
@@ -73,9 +74,10 @@ class PipePathMiddlewareTest extends TestCase
             'https://tests.com/test/with/wrong/path'
         );
 
+        $container = new Container();
         $handler = new RequestHandler();
         $handler->middleware(new NotFoundHandlerMiddleware());
-        $middleware = new PipePathMiddleware('/to', new PipedMiddleware());
+        $middleware = new PipePathMiddleware('/to', PipedMiddleware::class, $container);
 
         $response = $middleware->process($request, $handler);
 
@@ -90,9 +92,10 @@ class PipePathMiddlewareTest extends TestCase
             'https://tests.com/test/with/to/path'
         );
 
+        $container = new Container();
         $handler = new RequestHandler();
         $handler->middleware(new NotFoundHandlerMiddleware());
-        $middleware = new PipePathMiddleware('/to', new PipedMiddleware());
+        $middleware = new PipePathMiddleware('/to', PipedMiddleware::class, $container);
 
         $response = $middleware->process($request, $handler);
 

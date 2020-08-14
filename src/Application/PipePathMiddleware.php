@@ -5,6 +5,7 @@
 
 namespace Borsch\Application;
 
+use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -20,17 +21,22 @@ class PipePathMiddleware implements MiddlewareInterface
     /** @var string */
     protected $path;
 
-    /** @var MiddlewareInterface */
+    /** @var string */
     protected $middleware;
+
+    /** @var ContainerInterface */
+    protected $container;
 
     /**
      * @param string $path
-     * @param MiddlewareInterface $middleware
+     * @param string $middleware
+     * @param ContainerInterface $container
      */
-    public function __construct(string $path, MiddlewareInterface $middleware)
+    public function __construct(string $path, string $middleware, ContainerInterface &$container)
     {
         $this->path = $path;
         $this->middleware = $middleware;
+        $this->container = &$container;
     }
 
     /**
@@ -39,7 +45,9 @@ class PipePathMiddleware implements MiddlewareInterface
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         if (strpos($request->getUri()->getPath(), $this->path) === 0) {
-            return $this->middleware->process($request, $handler);
+            $middleware = $this->container->get($this->middleware);
+
+            return $middleware->process($request, $handler);
         }
 
         return $handler->handle($request);
