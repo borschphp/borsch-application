@@ -24,7 +24,6 @@ class PipePathMiddleware implements MiddlewareInterface
     protected $middleware;
 
     /**
-     * PipePathMiddleware constructor.
      * @param string $path
      * @param MiddlewareInterface $middleware
      */
