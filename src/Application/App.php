@@ -29,6 +29,9 @@ class App implements ApplicationInterface
     /** @var ContainerInterface */
     protected $container;
 
+    /** @var string */
+    protected $start_path = '';
+
     /**
      * @param RequestHandlerInterface $request_handler
      * @param RouterInterface $router
@@ -80,6 +83,20 @@ class App implements ApplicationInterface
     }
 
     /**
+     * @param string $start_path
+     * @param callable $proxy
+     */
+    public function group(string $start_path, callable $proxy): void
+    {
+        $prev_start_path = $this->start_path;
+        $this->start_path .= $start_path;
+
+        call_user_func($proxy, $this);
+
+        $this->start_path = $prev_start_path;
+    }
+
+    /**
      * @param string $path
      * @param string|string[] $handler
      * @param string|null $name
@@ -88,7 +105,7 @@ class App implements ApplicationInterface
     {
         $this->router->addRoute(new Route(
             ['GET'],
-            $path,
+            $this->start_path.$path,
             new LazyLoadingHandler($handler, $this->container),
             $name
         ));

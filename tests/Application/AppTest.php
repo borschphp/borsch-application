@@ -431,4 +431,85 @@ class AppTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->app->runAndGetResponse($server_request);
     }
+
+    public function testGroupedRoutesFound()
+    {
+        $this->app->pipe(RouteMiddleware::class);
+        $this->app->pipe(DispatchMiddleware::class);
+        $this->app->pipe(NotFoundHandlerMiddleware::class);
+
+        $this->app->group('/grouped/path', function (App $app) {
+            $app->get('/to/get', TestHandler::class);
+        });
+
+        $this->app->get('/to/get', [
+            BMiddleware::class,
+            TestHandler::class
+        ]);
+
+        $server_request = (new ServerRequestFactory())->createServerRequest(
+            'GET',
+            'https://tests.com/grouped/path/to/get'
+        );
+        $response = $this->app->runAndGetResponse($server_request);
+
+        $this->assertInstanceOf(ResponseInterface::class, $response);
+        $this->assertNotEquals(404, $response->getStatusCode());
+        $this->assertEquals(TestHandler::class.'::handle', $response->getBody()->getContents());
+    }
+
+    public function testGroupedRoutesSkipped()
+    {
+        $this->app->pipe(RouteMiddleware::class);
+        $this->app->pipe(DispatchMiddleware::class);
+        $this->app->pipe(NotFoundHandlerMiddleware::class);
+
+        $this->app->group('/grouped/path', function (App $app) {
+            $app->get('/to/get', TestHandler::class);
+        });
+
+        $this->app->get('/to/get', [
+            BMiddleware::class,
+            TestHandler::class
+        ]);
+
+        $server_request = (new ServerRequestFactory())->createServerRequest(
+            'GET',
+            'https://tests.com/to/get'
+        );
+        $response = $this->app->runAndGetResponse($server_request);
+
+        $this->assertInstanceOf(ResponseInterface::class, $response);
+        $this->assertEquals(200, $response->getStatusCode());
+        $this->assertEquals(BMiddleware::class.'::process', $response->getBody()->getContents());
+        $this->assertEquals('TEST', $response->getHeaderLine('X-Test'));
+    }
+
+    public function testGroupedGroupedRoutesFound()
+    {
+        $this->app->pipe(RouteMiddleware::class);
+        $this->app->pipe(DispatchMiddleware::class);
+        $this->app->pipe(NotFoundHandlerMiddleware::class);
+
+        $this->app->group('/grouped/path', function (App $app) {
+            $app->group('/to', function (App $app) {
+                $app->get('/get', TestHandler::class);
+            });
+        });
+
+        $this->app->get('/to/get', [
+            BMiddleware::class,
+            TestHandler::class
+        ]);
+
+        $server_request = (new ServerRequestFactory())->createServerRequest(
+            'GET',
+            'https://tests.com/grouped/path/to/get'
+        );
+        $response = $this->app->runAndGetResponse($server_request);
+
+        $this->assertInstanceOf(ResponseInterface::class, $response);
+        $this->assertNotEquals(404, $response->getStatusCode());
+        $this->assertEquals(TestHandler::class.'::handle', $response->getBody()->getContents());
+    }
 }
