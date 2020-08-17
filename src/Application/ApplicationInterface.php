@@ -15,18 +15,15 @@ interface ApplicationInterface
 
     /**
      * Pipe a middleware to the pipeline.
-     *
      * If two parameters are present, the first one must be a string representing a path to segregate
      * with the second one.
-     *
      * The middleware will be fetched from the container, therefore only give the container identifier.
-     *
      * An array of middleware can be provided for the second parameter.
      *
      * @param string $middleware_or_path
-     * @param string|string[] $middleware
+     * @param string|string[] $middlewares
      */
-    public function pipe(string $middleware_or_path, $middleware = null): void;
+    public function pipe(string $middleware_or_path, $middlewares = null): void;
 
     /**
      * Run the application.

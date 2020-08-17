@@ -5,10 +5,14 @@
 
 namespace Borsch\Application;
 
+use InvalidArgumentException;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use RuntimeException;
+use SplStack;
 
 /**
  * Class LazyLoadingHandler
@@ -20,17 +24,21 @@ class LazyLoadingHandler implements RequestHandlerInterface
     /** @var ContainerInterface */
     protected $container;
 
-    /** @var string */
-    protected $handler;
+    /** @var SplStack */
+    protected $stack;
 
     /**
-     * @param string $handler
+     * @param string|string[] $handlers
      * @param ContainerInterface $container
      */
-    public function __construct(string $handler, ContainerInterface &$container)
+    public function __construct($handlers, ContainerInterface &$container)
     {
         $this->container = &$container;
-        $this->handler = $handler;
+
+        $this->stack = new SplStack();
+        foreach ((array)$handlers as $handler) {
+            $this->stack->push($handler);
+        }
     }
 
     /**
@@ -38,9 +46,32 @@ class LazyLoadingHandler implements RequestHandlerInterface
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        /** @var RequestHandlerInterface $handler */
-        $handler = $this->container->get($this->handler);
+        if ($this->stack->isEmpty()) {
+            throw new RuntimeException(sprintf(
+                'The handler stack is empty and no %s has been returned, this probably happened because you did not set'.
+                ' a %s in your route handler stack.',
+                ResponseInterface::class,
+                RequestHandlerInterface::class
+            ));
+        }
 
-        return $handler->handle($request);
+        /** @var MiddlewareInterface|RequestHandlerInterface $handler */
+        $handler = $this->container->get($this->stack->shift());
+
+        if ($handler instanceof RequestHandlerInterface) {
+            return $handler->handle($request);
+        }
+
+        if ($handler instanceof MiddlewareInterface) {
+            return $handler->process($request, $this);
+        }
+
+        throw new InvalidArgumentException(sprintf(
+            'Route handler must be an instance of %s or an array of %s containing a %s, "%s" provided...',
+            RequestHandlerInterface::class,
+            MiddlewareInterface::class,
+            RequestHandlerInterface::class,
+            is_object($handler) ? get_class($handler) : gettype($handler)
+        ));
     }
 }

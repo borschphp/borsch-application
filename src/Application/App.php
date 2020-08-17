@@ -43,23 +43,18 @@ class App implements ApplicationInterface
 
     /**
      * @param string $middleware_or_path
-     * @param null|string|string[] $middleware
+     * @param null|string|string[] $middlewares
      */
-    public function pipe(string $middleware_or_path, $middleware = null): void
+    public function pipe(string $middleware_or_path, $middlewares = null): void
     {
-        $middleware = $middleware ?: $middleware_or_path;
-        $path = $middleware === $middleware_or_path ? '/' : $middleware_or_path;
+        $middlewares = $middlewares ?: $middleware_or_path;
+        $path = $middlewares === $middleware_or_path ? '/' : $middleware_or_path;
 
-        if ($path == '/') {
+        foreach ((array)$middlewares as $middleware) {
             $this->request_handler->middleware(
-                $this->container->get($middleware)
-            );
-            return;
-        }
-
-        foreach ((array)$middleware as $middle) {
-            $this->request_handler->middleware(
-                new PipePathMiddleware($path, $middle, $this->container)
+                $path == '/' ?
+                    new PipeMiddleware($middleware, $this->container) :
+                    new PipePathMiddleware($path, $middleware, $this->container)
             );
         }
     }
@@ -86,10 +81,10 @@ class App implements ApplicationInterface
 
     /**
      * @param string $path
-     * @param string $handler
+     * @param string|string[] $handler
      * @param string|null $name
      */
-    public function get(string $path, string $handler, ?string $name = null): void
+    public function get(string $path, $handler, ?string $name = null): void
     {
         $this->router->addRoute(new Route(
             ['GET'],
@@ -101,10 +96,10 @@ class App implements ApplicationInterface
 
     /**
      * @param string $path
-     * @param string $handler
+     * @param string|string[] $handler
      * @param string|null $name
      */
-    public function post(string $path, string $handler, ?string $name = null): void
+    public function post(string $path, $handler, ?string $name = null): void
     {
         $this->router->addRoute(new Route(
             ['POST'],
@@ -116,10 +111,10 @@ class App implements ApplicationInterface
 
     /**
      * @param string $path
-     * @param string $handler
+     * @param string|string[] $handler
      * @param string|null $name
      */
-    public function put(string $path, string $handler, ?string $name = null): void
+    public function put(string $path, $handler, ?string $name = null): void
     {
         $this->router->addRoute(new Route(
             ['PUT'],
@@ -131,10 +126,10 @@ class App implements ApplicationInterface
 
     /**
      * @param string $path
-     * @param string $handler
+     * @param string|string[] $handler
      * @param string|null $name
      */
-    public function delete(string $path, string $handler, ?string $name = null): void
+    public function delete(string $path, $handler, ?string $name = null): void
     {
         $this->router->addRoute(new Route(
             ['DELETE'],
@@ -146,10 +141,10 @@ class App implements ApplicationInterface
 
     /**
      * @param string $path
-     * @param string $handler
+     * @param string|string[] $handler
      * @param string|null $name
      */
-    public function patch(string $path, string $handler, ?string $name = null): void
+    public function patch(string $path, $handler, ?string $name = null): void
     {
         $this->router->addRoute(new Route(
             ['PATCH'],
@@ -161,10 +156,10 @@ class App implements ApplicationInterface
 
     /**
      * @param string $path
-     * @param string $handler
+     * @param string|string[] $handler
      * @param string|null $name
      */
-    public function head(string $path, string $handler, ?string $name = null): void
+    public function head(string $path, $handler, ?string $name = null): void
     {
         $this->router->addRoute(new Route(
             ['HEAD'],
@@ -176,10 +171,10 @@ class App implements ApplicationInterface
 
     /**
      * @param string $path
-     * @param string $handler
+     * @param string|string[] $handler
      * @param string|null $name
      */
-    public function options(string $path, string $handler, ?string $name = null): void
+    public function options(string $path, $handler, ?string $name = null): void
     {
         $this->router->addRoute(new Route(
             ['OPTIONS'],
@@ -191,10 +186,10 @@ class App implements ApplicationInterface
 
     /**
      * @param string $path
-     * @param string $handler
+     * @param string|string[] $handler
      * @param string|null $name
      */
-    public function purge(string $path, string $handler, ?string $name = null): void
+    public function purge(string $path, $handler, ?string $name = null): void
     {
         $this->router->addRoute(new Route(
             ['PURGE'],
@@ -206,10 +201,10 @@ class App implements ApplicationInterface
 
     /**
      * @param string $path
-     * @param string $handler
+     * @param string|string[] $handler
      * @param string|null $name
      */
-    public function trace(string $path, string $handler, ?string $name = null): void
+    public function trace(string $path, $handler, ?string $name = null): void
     {
         $this->router->addRoute(new Route(
             ['TRACE'],
@@ -221,10 +216,10 @@ class App implements ApplicationInterface
 
     /**
      * @param string $path
-     * @param string $handler
+     * @param string|string[] $handler
      * @param string|null $name
      */
-    public function connect(string $path, string $handler, ?string $name = null): void
+    public function connect(string $path, $handler, ?string $name = null): void
     {
         $this->router->addRoute(new Route(
             ['CONNECT'],
@@ -236,10 +231,10 @@ class App implements ApplicationInterface
 
     /**
      * @param string $path
-     * @param string $handler
+     * @param string|string[] $handler
      * @param string|null $name
      */
-    public function any(string $path, string $handler, ?string $name = null): void
+    public function any(string $path, $handler, ?string $name = null): void
     {
         $this->router->addRoute(new Route(
             ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS', 'PURGE', 'TRACE', 'CONNECT'],
@@ -252,10 +247,10 @@ class App implements ApplicationInterface
     /**
      * @param string[] $methods
      * @param string $path
-     * @param string $handler
+     * @param string|string[] $handler
      * @param string|null $name
      */
-    public function match(array $methods, string $path, string $handler, ?string $name = null): void
+    public function match(array $methods, string $path, $handler, ?string $name = null): void
     {
         $this->router->addRoute(new Route(
             $methods,

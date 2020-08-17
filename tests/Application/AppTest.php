@@ -19,10 +19,14 @@ use BorschTest\Middleware\PipedMiddleware;
 use BorschTest\Middleware\RouteMiddleware;
 use BorschTest\Mockup\AMiddleware;
 use BorschTest\Mockup\BMiddleware;
+use BorschTest\Mockup\CMiddleware;
 use BorschTest\Mockup\TestHandler;
+use InvalidArgumentException;
 use Laminas\Diactoros\ServerRequestFactory;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
+use RuntimeException;
+use stdClass;
 use TypeError;
 
 class AppTest extends TestCase
@@ -41,6 +45,9 @@ class AppTest extends TestCase
         $container->set(TestHandler::class);
         $container->set(FastRouteRouter::class);
         $container->set(RouterInterface::class, FastRouteRouter::class)->cache(true);
+        $container->set(stdClass::class, function () {
+            return new stdClass();
+        });
 
         $this->app = new App(
             new RequestHandler(),
@@ -358,5 +365,70 @@ class AppTest extends TestCase
         $this->assertInstanceOf(ResponseInterface::class, $response);
         $this->assertNotEquals(404, $response->getStatusCode());
         $this->assertEquals(TestHandler::class.'::handle', $response->getBody()->getContents());
+    }
+
+    public function testRouteWithArrayOfMiddlewareThenHandler()
+    {
+        $server_request = (new ServerRequestFactory())->createServerRequest(
+            'GET',
+            'https://tests.com/to/get'
+        );
+
+        $this->app->pipe(RouteMiddleware::class);
+        $this->app->pipe(DispatchMiddleware::class);
+        $this->app->pipe(NotFoundHandlerMiddleware::class);
+
+        $this->app->get('/to/get', [
+            AMiddleware::class,
+            CMiddleware::class,
+            TestHandler::class
+        ]);
+
+        $response = $this->app->runAndGetResponse($server_request);
+
+        $this->assertInstanceOf(ResponseInterface::class, $response);
+        $this->assertNotEquals(404, $response->getStatusCode());
+        $this->assertEquals(TestHandler::class.'::handle', $response->getBody()->getContents());
+    }
+
+    public function testRouteWithArrayOfMiddlewareButHandlerThrowException()
+    {
+        $server_request = (new ServerRequestFactory())->createServerRequest(
+            'GET',
+            'https://tests.com/to/get'
+        );
+
+        $this->app->pipe(RouteMiddleware::class);
+        $this->app->pipe(DispatchMiddleware::class);
+        $this->app->pipe(NotFoundHandlerMiddleware::class);
+
+        $this->app->get('/to/get', [
+            AMiddleware::class,
+            CMiddleware::class
+        ]);
+
+        $this->expectException(RuntimeException::class);
+        $this->app->runAndGetResponse($server_request);
+    }
+
+    public function testRouteWithArrayOfMiddlewareButInvalidHandlerTypeThrowException()
+    {
+        $server_request = (new ServerRequestFactory())->createServerRequest(
+            'GET',
+            'https://tests.com/to/get'
+        );
+
+        $this->app->pipe(RouteMiddleware::class);
+        $this->app->pipe(DispatchMiddleware::class);
+        $this->app->pipe(NotFoundHandlerMiddleware::class);
+
+        $this->app->get('/to/get', [
+            AMiddleware::class,
+            stdClass::class,
+            CMiddleware::class
+        ]);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->app->runAndGetResponse($server_request);
     }
 }
