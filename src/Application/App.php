@@ -6,12 +6,12 @@
 namespace Borsch\Application;
 
 use Borsch\RequestHandler\Emitter;
+use Borsch\RequestHandler\RequestHandler;
 use Borsch\Router\Route;
 use Borsch\Router\RouterInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Server\RequestHandlerInterface;
 
 /**
  * Class App
@@ -20,7 +20,7 @@ use Psr\Http\Server\RequestHandlerInterface;
 class App implements ApplicationInterface
 {
 
-    /** @var RequestHandlerInterface */
+    /** @var RequestHandler */
     protected $request_handler;
 
     /** @var RouterInterface */
@@ -33,11 +33,11 @@ class App implements ApplicationInterface
     protected $start_path = '';
 
     /**
-     * @param RequestHandlerInterface $request_handler
+     * @param RequestHandler $request_handler
      * @param RouterInterface $router
      * @param ContainerInterface $container
      */
-    public function __construct(RequestHandlerInterface $request_handler, RouterInterface $router, ContainerInterface $container)
+    public function __construct(RequestHandler $request_handler, RouterInterface $router, ContainerInterface $container)
     {
         $this->request_handler = $request_handler;
         $this->router = $router;

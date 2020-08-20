@@ -55,7 +55,7 @@ class LazyLoadingHandler implements RequestHandlerInterface
             ));
         }
 
-        /** @var MiddlewareInterface|RequestHandlerInterface $handler */
+        /** @var MiddlewareInterface|RequestHandlerInterface|mixed $handler */
         $handler = $this->container->get($this->stack->shift());
 
         if ($handler instanceof RequestHandlerInterface) {
