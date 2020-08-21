@@ -24,6 +24,14 @@ use Laminas\Diactoros\ServerRequestFactory;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
 
+/**
+ * @coversDefaultClass \Borsch\Application\PipePathMiddleware
+ * @covers \Borsch\Application\PipePathMiddleware::__construct
+ * @uses \Borsch\Application\PipePathMiddleware
+ * @uses \Borsch\Application\App
+ * @uses \Borsch\Application\PipeMiddleware
+ * @uses \Borsch\Application\LazyLoadingHandler
+ */
 class PipePathMiddlewareTest extends TestCase
 {
 
@@ -50,6 +58,9 @@ class PipePathMiddlewareTest extends TestCase
         );
     }
 
+    /**
+     * @covers ::process
+     */
     public function testProcessWithPath()
     {
         $request = (new ServerRequestFactory())->createServerRequest(
@@ -67,6 +78,9 @@ class PipePathMiddlewareTest extends TestCase
         $this->assertEquals(PipedMiddleware::class.'::process', $response->getBody()->getContents());
     }
 
+    /**
+     * @covers ::process
+     */
     public function testProcessWithWrongPath()
     {
         $request = (new ServerRequestFactory())->createServerRequest(
@@ -85,6 +99,9 @@ class PipePathMiddlewareTest extends TestCase
         $this->assertEquals(404, $response->getStatusCode());
     }
 
+    /**
+     * @covers ::process
+     */
     public function testProcessWithPathNotPlacedAtTheBeginningOrUri()
     {
         $request = (new ServerRequestFactory())->createServerRequest(
@@ -103,6 +120,9 @@ class PipePathMiddlewareTest extends TestCase
         $this->assertEquals(404, $response->getStatusCode());
     }
 
+    /**
+     * @covers ::process
+     */
     public function testProcessWithPathAndArrayOfMiddleware()
     {
         $request = (new ServerRequestFactory())->createServerRequest(
