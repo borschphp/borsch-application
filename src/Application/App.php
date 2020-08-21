@@ -21,7 +21,7 @@ use Psr\Http\Message\ServerRequestInterface;
 class App implements ApplicationInterface
 {
 
-    /** @var RequestHandler */
+    /** @var ApplicationRequestHandlerInterface */
     protected $request_handler;
 
     /** @var RouterInterface */
