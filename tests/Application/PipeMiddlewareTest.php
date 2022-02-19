@@ -4,7 +4,6 @@ namespace BorschTest\Application;
 
 use Borsch\Application\App;
 use Borsch\Application\PipeMiddleware;
-use Borsch\Application\PipePathMiddleware;
 use Borsch\Container\Container;
 use Borsch\RequestHandler\RequestHandler;
 use Borsch\Router\FastRouteRouter;
@@ -33,7 +32,6 @@ class PipeMiddlewareTest extends TestCase
     public function setUp(): void
     {
         $container = new Container();
-        $container->set(PipePathMiddleware::class);
         $container->set(RouteMiddleware::class);
         $container->set(DispatchMiddleware::class);
         $container->set(NotFoundHandlerMiddleware::class);
@@ -57,6 +55,7 @@ class PipeMiddlewareTest extends TestCase
     {
         $container = new Container();
         $pipe_middleware = new PipeMiddleware(
+            '/',
             BMiddleware::class,
             $container
         );

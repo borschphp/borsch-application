@@ -56,9 +56,7 @@ class App implements ApplicationInterface
 
         foreach ((array)$middlewares as $middleware) {
             $this->request_handler->middleware(
-                $path == '/' ?
-                    new PipeMiddleware($middleware, $this->container) :
-                    new PipePathMiddleware($path, $middleware, $this->container)
+                new PipeMiddleware($path, $middleware, $this->container)
             );
         }
     }

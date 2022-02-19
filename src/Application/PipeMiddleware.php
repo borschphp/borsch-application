@@ -24,14 +24,18 @@ class PipeMiddleware implements MiddlewareInterface
     /** @var ContainerInterface */
     protected $container;
 
+    /** @var string */
+    protected $path;
+
     /**
      * PipeMiddleware constructor.
      *
      * @param string $middleware
      * @param ContainerInterface $container
      */
-    public function __construct(string $middleware, ContainerInterface &$container)
+    public function __construct(string $path, string $middleware, ContainerInterface &$container)
     {
+        $this->path = $path;
         $this->middleware = $middleware;
         $this->container = &$container;
     }
@@ -43,6 +47,10 @@ class PipeMiddleware implements MiddlewareInterface
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        return $this->container->get($this->middleware)->process($request, $handler);
+        if (strpos($request->getUri()->getPath(), $this->path) === 0) {
+            return $this->container->get($this->middleware)->process($request, $handler);
+        }
+
+        return $handler->handle($request);
     }
 }
