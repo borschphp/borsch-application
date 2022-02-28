@@ -11,6 +11,7 @@
   ],
   "require": {
     "php": "^7.2|^8.0",
+    "psr/log": "^1.0",
     "borschphp/requesthandler": "^0",
     "borschphp/router": "^0",
     "borschphp/container": "^0"
