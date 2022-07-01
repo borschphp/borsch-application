@@ -5,11 +5,19 @@
 
 namespace Borsch\Application;
 
-use Psr\Container\ContainerInterface;
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Server\MiddlewareInterface;
-use Psr\Http\Server\RequestHandlerInterface;
+use Psr\Container\{
+    ContainerExceptionInterface,
+    ContainerInterface,
+    NotFoundExceptionInterface
+};
+use Psr\Http\Message\{
+    ResponseInterface,
+    ServerRequestInterface
+};
+use Psr\Http\Server\{
+    MiddlewareInterface,
+    RequestHandlerInterface
+};
 
 /**
  * Class PipeMiddleware
@@ -18,25 +26,21 @@ use Psr\Http\Server\RequestHandlerInterface;
 class PipeMiddleware implements MiddlewareInterface
 {
 
-    /** @var string */
-    protected $middleware;
-
     /** @var ContainerInterface */
-    protected $container;
-
-    /** @var string */
-    protected $path;
+    protected ContainerInterface $container;
 
     /**
      * PipeMiddleware constructor.
      *
+     * @param string $path
      * @param string $middleware
      * @param ContainerInterface $container
      */
-    public function __construct(string $path, string $middleware, ContainerInterface &$container)
-    {
-        $this->path = $path;
-        $this->middleware = $middleware;
+    public function __construct(
+        protected string $path,
+        protected string $middleware,
+        ContainerInterface &$container
+    ) {
         $this->container = &$container;
     }
 
@@ -44,10 +48,12 @@ class PipeMiddleware implements MiddlewareInterface
      * @param ServerRequestInterface $request
      * @param RequestHandlerInterface $handler
      * @return ResponseInterface
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        if (strpos($request->getUri()->getPath(), $this->path) === 0) {
+        if (str_starts_with($request->getUri()->getPath(), $this->path)) {
             return $this->container->get($this->middleware)->process($request, $handler);
         }
 

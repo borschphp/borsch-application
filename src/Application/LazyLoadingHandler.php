@@ -6,11 +6,19 @@
 namespace Borsch\Application;
 
 use InvalidArgumentException;
-use Psr\Container\ContainerInterface;
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Server\MiddlewareInterface;
-use Psr\Http\Server\RequestHandlerInterface;
+use Psr\Container\{
+    ContainerExceptionInterface,
+    ContainerInterface,
+    NotFoundExceptionInterface
+};
+use Psr\Http\Message\{
+    ResponseInterface,
+    ServerRequestInterface
+};
+use Psr\Http\Server\{
+    MiddlewareInterface,
+    RequestHandlerInterface
+};
 use RuntimeException;
 use SplStack;
 
@@ -21,18 +29,17 @@ use SplStack;
 class LazyLoadingHandler implements RequestHandlerInterface
 {
 
-    /** @var ContainerInterface */
-    protected $container;
+    /** @var ContainerInterface $container */
+    protected ContainerInterface $container;
 
     /** @var SplStack */
-    protected $stack;
+    protected SplStack $stack;
 
     /**
      * @param string|string[] $handlers
      * @param ContainerInterface $container
      */
-    public function __construct($handlers, ContainerInterface &$container)
-    {
+    public function __construct(string|array $handlers, ContainerInterface &$container) {
         $this->container = &$container;
 
         $this->stack = new SplStack();
@@ -42,7 +49,11 @@ class LazyLoadingHandler implements RequestHandlerInterface
     }
 
     /**
-     * @inheritDoc
+     * @param ServerRequestInterface $request
+     * @return ResponseInterface
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     * @throws InvalidArgumentException
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {

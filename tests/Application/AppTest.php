@@ -9,7 +9,6 @@ require_once __DIR__.'/../../vendor/autoload.php';
 
 use Borsch\Application\App;
 use Borsch\Application\ApplicationInterface;
-use Borsch\Application\PipePathMiddleware;
 use Borsch\Container\Container;
 use Borsch\RequestHandler\RequestHandler;
 use Borsch\Router\FastRouteRouter;
@@ -26,6 +25,7 @@ use InvalidArgumentException;
 use Laminas\Diactoros\ServerRequestFactory;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use RuntimeException;
 use stdClass;
 use TypeError;
@@ -51,7 +51,6 @@ class AppTest extends TestCase
     public function setUp(): void
     {
         $container = new Container();
-        $container->set(PipePathMiddleware::class);
         $container->set(RouteMiddleware::class);
         $container->set(DispatchMiddleware::class);
         $container->set(NotFoundHandlerMiddleware::class);
@@ -67,6 +66,13 @@ class AppTest extends TestCase
             $container->get(RouterInterface::class),
             $container
         );
+
+        $this->app = new class(new RequestHandler(), $container->get(RouterInterface::class), $container) extends App {
+            public function runAndGetResponse(ServerRequestInterface $server_request): ResponseInterface
+            {
+                return $this->request_handler->handle($server_request);
+            }
+        };
     }
 
     /**

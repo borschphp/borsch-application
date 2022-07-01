@@ -5,13 +5,15 @@
 
 namespace Borsch\Application;
 
-use Borsch\RequestHandler\ApplicationRequestHandlerInterface;
-use Borsch\RequestHandler\Emitter;
-use Borsch\RequestHandler\RequestHandler;
-use Borsch\Router\Route;
-use Borsch\Router\RouterInterface;
+use Borsch\RequestHandler\{
+    ApplicationRequestHandlerInterface,
+    Emitter
+};
+use Borsch\Router\{
+    Route,
+    RouterInterface
+};
 use Psr\Container\ContainerInterface;
-use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 /**
@@ -21,29 +23,19 @@ use Psr\Http\Message\ServerRequestInterface;
 class App implements ApplicationInterface
 {
 
-    /** @var ApplicationRequestHandlerInterface */
-    protected $request_handler;
-
-    /** @var RouterInterface */
-    protected $router;
-
-    /** @var ContainerInterface */
-    protected $container;
-
     /** @var string */
-    protected $start_path = '';
+    protected string $start_path = '';
 
     /**
      * @param ApplicationRequestHandlerInterface $request_handler
      * @param RouterInterface $router
      * @param ContainerInterface $container
      */
-    public function __construct(ApplicationRequestHandlerInterface $request_handler, RouterInterface $router, ContainerInterface $container)
-    {
-        $this->request_handler = $request_handler;
-        $this->router = $router;
-        $this->container = $container;
-    }
+    public function __construct(
+        protected ApplicationRequestHandlerInterface $request_handler,
+        protected RouterInterface $router,
+        protected ContainerInterface $container
+    ) {}
 
     /**
      * @param string $middleware_or_path
@@ -59,15 +51,6 @@ class App implements ApplicationInterface
                 new PipeMiddleware($path, $middleware, $this->container)
             );
         }
-    }
-
-    /**
-     * @param ServerRequestInterface $server_request
-     * @return ResponseInterface
-     */
-    public function runAndGetResponse(ServerRequestInterface $server_request): ResponseInterface
-    {
-        return $this->request_handler->handle($server_request);
     }
 
     /**

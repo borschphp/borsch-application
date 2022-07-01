@@ -6,15 +6,19 @@
   "authors": [
     {
       "name": "Alexandre DEBUSSCHERE",
-      "email": "zizilex@gmail.com"
+      "email": "alexandre.debusschere@hey.com"
     }
   ],
   "require": {
-    "php": "^7.2|^8.0",
+    "php": "^8.0",
     "psr/log": "^1.0",
-    "borschphp/requesthandler": "^0",
-    "borschphp/router": "^0",
-    "borschphp/container": "^0"
+    "borschphp/requesthandler": "^1",
+    "borschphp/router": "^1",
+    "borschphp/container": "^1"
+  },
+  "require-dev": {
+    "laminas/laminas-diactoros": "^2",
+    "phpunit/phpunit": "^9"
   },
   "autoload": {
     "psr-4": {
@@ -25,9 +29,5 @@
     "psr-4": {
       "BorschTest\\": "tests/"
     }
-  },
-  "require-dev": {
-    "laminas/laminas-diactoros": "2.2.3",
-    "phpunit/phpunit": "^8"
   }
 }
