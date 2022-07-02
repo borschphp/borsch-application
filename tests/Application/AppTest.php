@@ -61,12 +61,6 @@ class AppTest extends TestCase
             return new stdClass();
         });
 
-        $this->app = new App(
-            new RequestHandler(),
-            $container->get(RouterInterface::class),
-            $container
-        );
-
         $this->app = new class(new RequestHandler(), $container->get(RouterInterface::class), $container) extends App {
             public function runAndGetResponse(ServerRequestInterface $server_request): ResponseInterface
             {
