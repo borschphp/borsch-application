@@ -102,7 +102,7 @@ class App implements ApplicationInterface
     {
         $this->router->addRoute(new Route(
             ['POST'],
-            $path,
+            $this->start_path.$path,
             new LazyLoadingHandler($handler, $this->container),
             $name
         ));
@@ -117,7 +117,7 @@ class App implements ApplicationInterface
     {
         $this->router->addRoute(new Route(
             ['PUT'],
-            $path,
+            $this->start_path.$path,
             new LazyLoadingHandler($handler, $this->container),
             $name
         ));
@@ -132,7 +132,7 @@ class App implements ApplicationInterface
     {
         $this->router->addRoute(new Route(
             ['DELETE'],
-            $path,
+            $this->start_path.$path,
             new LazyLoadingHandler($handler, $this->container),
             $name
         ));
@@ -147,7 +147,7 @@ class App implements ApplicationInterface
     {
         $this->router->addRoute(new Route(
             ['PATCH'],
-            $path,
+            $this->start_path.$path,
             new LazyLoadingHandler($handler, $this->container),
             $name
         ));
@@ -162,7 +162,7 @@ class App implements ApplicationInterface
     {
         $this->router->addRoute(new Route(
             ['HEAD'],
-            $path,
+            $this->start_path.$path,
             new LazyLoadingHandler($handler, $this->container),
             $name
         ));
@@ -177,7 +177,7 @@ class App implements ApplicationInterface
     {
         $this->router->addRoute(new Route(
             ['OPTIONS'],
-            $path,
+            $this->start_path.$path,
             new LazyLoadingHandler($handler, $this->container),
             $name
         ));
@@ -192,7 +192,7 @@ class App implements ApplicationInterface
     {
         $this->router->addRoute(new Route(
             ['PURGE'],
-            $path,
+            $this->start_path.$path,
             new LazyLoadingHandler($handler, $this->container),
             $name
         ));
@@ -207,7 +207,7 @@ class App implements ApplicationInterface
     {
         $this->router->addRoute(new Route(
             ['TRACE'],
-            $path,
+            $this->start_path.$path,
             new LazyLoadingHandler($handler, $this->container),
             $name
         ));
@@ -222,7 +222,7 @@ class App implements ApplicationInterface
     {
         $this->router->addRoute(new Route(
             ['CONNECT'],
-            $path,
+            $this->start_path.$path,
             new LazyLoadingHandler($handler, $this->container),
             $name
         ));
@@ -237,7 +237,7 @@ class App implements ApplicationInterface
     {
         $this->router->addRoute(new Route(
             ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS', 'PURGE', 'TRACE', 'CONNECT'],
-            $path,
+            $this->start_path.$path,
             new LazyLoadingHandler($handler, $this->container),
             $name
         ));
@@ -253,7 +253,7 @@ class App implements ApplicationInterface
     {
         $this->router->addRoute(new Route(
             $methods,
-            $path,
+            $this->start_path.$path,
             new LazyLoadingHandler($handler, $this->container),
             $name
         ));

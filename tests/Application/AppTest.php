@@ -524,6 +524,7 @@ class AppTest extends TestCase
 
         $this->app->group('/grouped/path', function (App $app) {
             $app->get('/to/get', TestHandler::class);
+            $app->post('/to/post', TestHandler::class);
         });
 
         $this->app->get('/to/get', [
@@ -531,9 +532,41 @@ class AppTest extends TestCase
             TestHandler::class
         ]);
 
+        // Test GET route
         $server_request = (new ServerRequestFactory())->createServerRequest(
             'GET',
             'https://tests.com/grouped/path/to/get'
+        );
+        $response = $this->app->runAndGetResponse($server_request);
+
+        $this->assertInstanceOf(ResponseInterface::class, $response);
+        $this->assertNotEquals(404, $response->getStatusCode());
+        $this->assertEquals(TestHandler::class.'::handle', $response->getBody()->getContents());
+    }
+
+    /**
+     * @covers ::group
+     */
+    public function testGroupedRoutesFoundPost()
+    {
+        $this->app->pipe(RouteMiddleware::class);
+        $this->app->pipe(DispatchMiddleware::class);
+        $this->app->pipe(NotFoundHandlerMiddleware::class);
+
+        $this->app->group('/grouped/path', function (App $app) {
+            $app->get('/to/get', TestHandler::class);
+            $app->post('/to/post', TestHandler::class);
+        });
+
+        $this->app->get('/to/get', [
+            BMiddleware::class,
+            TestHandler::class
+        ]);
+
+        // Test POST route
+        $server_request = (new ServerRequestFactory())->createServerRequest(
+            'POST',
+            'https://tests.com/grouped/path/to/post'
         );
         $response = $this->app->runAndGetResponse($server_request);
 
