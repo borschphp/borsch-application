@@ -6,19 +6,9 @@
 namespace Borsch\Application;
 
 use InvalidArgumentException;
-use Psr\Container\{
-    ContainerExceptionInterface,
-    ContainerInterface,
-    NotFoundExceptionInterface
-};
-use Psr\Http\Message\{
-    ResponseInterface,
-    ServerRequestInterface
-};
-use Psr\Http\Server\{
-    MiddlewareInterface,
-    RequestHandlerInterface
-};
+use Psr\Container\{ContainerExceptionInterface, ContainerInterface, NotFoundExceptionInterface};
+use Psr\Http\Message\{ResponseInterface, ServerRequestInterface};
+use Psr\Http\Server\{MiddlewareInterface, RequestHandlerInterface};
 use RuntimeException;
 use SplStack;
 

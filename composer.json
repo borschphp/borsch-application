@@ -10,10 +10,10 @@
     }
   ],
   "require": {
-    "php": "^8.0",
+    "php": "^8.1",
     "psr/log": "^1.0",
     "borschphp/requesthandler": "^1",
-    "borschphp/router": "^1",
+    "borschphp/router": "^2",
     "borschphp/container": "^1"
   },
   "require-dev": {

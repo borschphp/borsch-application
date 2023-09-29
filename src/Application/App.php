@@ -5,14 +5,8 @@
 
 namespace Borsch\Application;
 
-use Borsch\RequestHandler\{
-    ApplicationRequestHandlerInterface,
-    Emitter
-};
-use Borsch\Router\{
-    Route,
-    RouterInterface
-};
+use Borsch\RequestHandler\{ApplicationRequestHandlerInterface, Emitter};
+use Borsch\Router\{Route, RouterInterface};
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -85,12 +79,7 @@ class App implements ApplicationInterface
      */
     public function get(string $path, $handler, ?string $name = null): void
     {
-        $this->router->addRoute(new Route(
-            ['GET'],
-            $this->start_path.$path,
-            new LazyLoadingHandler($handler, $this->container),
-            $name
-        ));
+        $this->match(HttpMethods::GET, $path, $handler, $name);
     }
 
     /**
@@ -100,12 +89,7 @@ class App implements ApplicationInterface
      */
     public function post(string $path, $handler, ?string $name = null): void
     {
-        $this->router->addRoute(new Route(
-            ['POST'],
-            $this->start_path.$path,
-            new LazyLoadingHandler($handler, $this->container),
-            $name
-        ));
+        $this->match(HttpMethods::POST, $path, $handler, $name);
     }
 
     /**
@@ -115,12 +99,7 @@ class App implements ApplicationInterface
      */
     public function put(string $path, $handler, ?string $name = null): void
     {
-        $this->router->addRoute(new Route(
-            ['PUT'],
-            $this->start_path.$path,
-            new LazyLoadingHandler($handler, $this->container),
-            $name
-        ));
+        $this->match(HttpMethods::PUT, $path, $handler, $name);
     }
 
     /**
@@ -130,12 +109,7 @@ class App implements ApplicationInterface
      */
     public function delete(string $path, $handler, ?string $name = null): void
     {
-        $this->router->addRoute(new Route(
-            ['DELETE'],
-            $this->start_path.$path,
-            new LazyLoadingHandler($handler, $this->container),
-            $name
-        ));
+        $this->match(HttpMethods::DELETE, $path, $handler, $name);
     }
 
     /**
@@ -145,12 +119,7 @@ class App implements ApplicationInterface
      */
     public function patch(string $path, $handler, ?string $name = null): void
     {
-        $this->router->addRoute(new Route(
-            ['PATCH'],
-            $this->start_path.$path,
-            new LazyLoadingHandler($handler, $this->container),
-            $name
-        ));
+        $this->match(HttpMethods::PATCH, $path, $handler, $name);
     }
 
     /**
@@ -160,12 +129,7 @@ class App implements ApplicationInterface
      */
     public function head(string $path, $handler, ?string $name = null): void
     {
-        $this->router->addRoute(new Route(
-            ['HEAD'],
-            $this->start_path.$path,
-            new LazyLoadingHandler($handler, $this->container),
-            $name
-        ));
+        $this->match(HttpMethods::HEAD, $path, $handler, $name);
     }
 
     /**
@@ -175,12 +139,7 @@ class App implements ApplicationInterface
      */
     public function options(string $path, $handler, ?string $name = null): void
     {
-        $this->router->addRoute(new Route(
-            ['OPTIONS'],
-            $this->start_path.$path,
-            new LazyLoadingHandler($handler, $this->container),
-            $name
-        ));
+        $this->match(HttpMethods::OPTIONS, $path, $handler, $name);
     }
 
     /**
@@ -190,12 +149,7 @@ class App implements ApplicationInterface
      */
     public function purge(string $path, $handler, ?string $name = null): void
     {
-        $this->router->addRoute(new Route(
-            ['PURGE'],
-            $this->start_path.$path,
-            new LazyLoadingHandler($handler, $this->container),
-            $name
-        ));
+        $this->match(HttpMethods::PURGE, $path, $handler, $name);
     }
 
     /**
@@ -205,12 +159,7 @@ class App implements ApplicationInterface
      */
     public function trace(string $path, $handler, ?string $name = null): void
     {
-        $this->router->addRoute(new Route(
-            ['TRACE'],
-            $this->start_path.$path,
-            new LazyLoadingHandler($handler, $this->container),
-            $name
-        ));
+        $this->match(HttpMethods::TRACE, $path, $handler, $name);
     }
 
     /**
@@ -220,12 +169,7 @@ class App implements ApplicationInterface
      */
     public function connect(string $path, $handler, ?string $name = null): void
     {
-        $this->router->addRoute(new Route(
-            ['CONNECT'],
-            $this->start_path.$path,
-            new LazyLoadingHandler($handler, $this->container),
-            $name
-        ));
+        $this->match(HttpMethods::CONNECT, $path, $handler, $name);
     }
 
     /**
@@ -235,22 +179,24 @@ class App implements ApplicationInterface
      */
     public function any(string $path, $handler, ?string $name = null): void
     {
-        $this->router->addRoute(new Route(
-            ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS', 'PURGE', 'TRACE', 'CONNECT'],
-            $this->start_path.$path,
-            new LazyLoadingHandler($handler, $this->container),
-            $name
-        ));
+        $this->match(HttpMethods::toArray(), $path, $handler, $name);
     }
 
     /**
-     * @param string[] $methods
+     * @param HttpMethods|HttpMethods[]|string $methods
      * @param string $path
      * @param string|string[] $handler
      * @param string|null $name
      */
-    public function match(array $methods, string $path, $handler, ?string $name = null): void
+    public function match(HttpMethods|array|string $methods, string $path, string|array $handler, ?string $name = null): void
     {
+        $methods = array_map(
+            fn($method) => $method instanceof HttpMethods ?
+                $method->name :
+                $method,
+            (array)$methods
+        );
+
         $this->router->addRoute(new Route(
             $methods,
             $this->start_path.$path,
