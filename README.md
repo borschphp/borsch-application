@@ -13,11 +13,6 @@ Via [composer](https://getcomposer.org/) :
 ## Usage
 
 ```php
-$server_request = (new ServerRequestFactory())->createServerRequest(
-    'GET',
-    'https://tests.com/to/get'
-);
-
 $container = new Container();
 $container->set(PipePathMiddleware::class);
 $container->set(RouteMiddleware::class);
@@ -37,7 +32,7 @@ $app->pipe(RouteMiddleware::class);
 $app->pipe(DispatchMiddleware::class);
 $app->pipe(NotFoundHandlerMiddleware::class);
 
-$app->get('/to/get', TestHandler::class);
+$app->get('/a/get/path', TestHandler::class);
 
 $app->run(ServerRequestFactory::fromGlobals());
 ```
