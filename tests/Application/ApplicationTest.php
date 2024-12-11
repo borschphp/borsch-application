@@ -619,6 +619,29 @@ class ApplicationTest extends TestCase
     }
 
     /**
+     * @covers ::respond
+     */
+    public function testRespond()
+    {
+        $server_request = (new ServerRequestFactory())->createServerRequest(
+            'GET',
+            'https://tests.com/to/get'
+        );
+
+        $this->application->pipe(RouteMiddleware::class);
+        $this->application->pipe(DispatchMiddleware::class);
+        $this->application->pipe(NotFoundHandlerMiddleware::class);
+
+        $this->application->get('/to/get', TestHandler::class);
+
+        $response = $this->application->respond($server_request);
+
+        $this->assertInstanceOf(ResponseInterface::class, $response);
+        $this->assertEquals(200, $response->getStatusCode());
+        $this->assertEquals(TestHandler::class.'::handle', $response->getBody()->getContents());
+    }
+
+    /**
      * @covers ::run
      */
     public function testRun()

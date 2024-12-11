@@ -13,7 +13,7 @@
     "php": "^8.2",
     "psr/log": "^1.0 || ^2.0 || ^3.0",
     "psr/container": "^1.0 || ^2.0",
-    "borschphp/requesthandler": "^1",
+    "borschphp/requesthandler": "^2",
     "borschphp/router": "^2"
   },
   "require-dev": {

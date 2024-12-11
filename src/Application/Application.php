@@ -6,7 +6,7 @@ use Borsch\Application\Factory\HandlerFactory;
 use Borsch\Application\Server\HttpMethods;
 use Borsch\Application\Server\LazyLoadingHandler;
 use Borsch\Application\Server\PipeMiddleware;
-use Borsch\RequestHandler\{ApplicationRequestHandlerInterface, Emitter};
+use Borsch\RequestHandler\{RequestHandlerInterface, Emitter};
 use Borsch\Router\{Route, RouterInterface};
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -19,9 +19,9 @@ class Application implements ApplicationInterface
     protected string $start_path = '';
 
     public function __construct(
-        protected ApplicationRequestHandlerInterface $request_handler,
-        protected RouterInterface $router,
-        protected ContainerInterface $container
+        protected RequestHandlerInterface $request_handler,
+        protected RouterInterface         $router,
+        protected ContainerInterface      $container
     ) {
         $this->handler_factory = new HandlerFactory($container);
     }
@@ -29,7 +29,7 @@ class Application implements ApplicationInterface
     /**
      * @param null|string|string[] $middlewares
      */
-    public function pipe(string $middleware_or_path, $middlewares = null): void
+    public function pipe(string $middleware_or_path, null|string|array $middlewares = null): void
     {
         $middlewares = $middlewares ?: $middleware_or_path;
         $path = $middlewares === $middleware_or_path ? '/' : $middleware_or_path;
