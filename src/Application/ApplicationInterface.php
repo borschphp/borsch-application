@@ -24,10 +24,10 @@ interface ApplicationInterface
      * @param string $middleware_or_path
      * @param string|string[] $middlewares
      */
-    public function pipe(string $middleware_or_path, string|array $middlewares = null): void;
+    public function pipe(string $middleware_or_path, string|array|null $middlewares = null): void;
 
     /**
-     * Respond to a server request.
+     * Respond with a ResponseInterface to a server request.
      *
      * @param ServerRequestInterface $server_request
      * @return ResponseInterface
@@ -35,7 +35,7 @@ interface ApplicationInterface
     public function respond(ServerRequestInterface $server_request): ResponseInterface;
 
     /**
-     * Emit the response.
+     * Emit the ResponseInterface to a client.
      *
      * @param ResponseInterface $response
      */
