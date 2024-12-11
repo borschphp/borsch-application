@@ -1,14 +1,7 @@
 <?php
-/**
- * @author debuss-a
- */
 
-namespace Borsch\Application;
+namespace Borsch\Application\Server;
 
-/**
- * Enum HttpMethods
- * @package Borsch\Application
- */
 enum HttpMethods
 {
     case GET;

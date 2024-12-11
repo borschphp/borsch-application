@@ -2,32 +2,24 @@
 
 namespace BorschTest\Application;
 
-use Borsch\Application\App;
-use Borsch\Application\PipeMiddleware;
+use Borsch\Application\{Application, Factory\HandlerFactory, Server\PipeMiddleware};
 use Borsch\Container\Container;
 use Borsch\RequestHandler\RequestHandler;
-use Borsch\Router\FastRouteRouter;
-use Borsch\Router\RouterInterface;
-use BorschTest\Middleware\DispatchMiddleware;
-use BorschTest\Middleware\NotFoundHandlerMiddleware;
-use BorschTest\Middleware\RouteMiddleware;
-use BorschTest\Mockup\AMiddleware;
-use BorschTest\Mockup\BMiddleware;
-use BorschTest\Mockup\CMiddleware;
-use BorschTest\Mockup\TestHandler;
+use Borsch\Router\{FastRouteRouter, RouterInterface};
+use BorschTest\Middleware\{DispatchMiddleware, NotFoundHandlerMiddleware, RouteMiddleware};
+use BorschTest\Mockup\{AMiddleware, BMiddleware, CMiddleware, TestHandler};
 use Laminas\Diactoros\ServerRequestFactory;
 use PHPUnit\Framework\TestCase;
 
 /**
- * @coversDefaultClass \Borsch\Application\PipeMiddleware
- * @covers \Borsch\Application\PipeMiddleware::__construct
- * @uses \Borsch\Application\App
+ * @coversDefaultClass \Borsch\Application\Server\PipeMiddleware
+ * @covers \Borsch\Application\Server\PipeMiddleware::__construct
+ * @uses Application
  */
 class PipeMiddlewareTest extends TestCase
 {
 
-    /** @var App */
-    protected $app;
+    protected Application $application;
 
     public function setUp(): void
     {
@@ -41,7 +33,7 @@ class PipeMiddlewareTest extends TestCase
         $container->set(AMiddleware::class);
         $container->set(CMiddleware::class);
 
-        $this->app = new App(
+        $this->application = new Application(
             new RequestHandler(),
             $container->get(RouterInterface::class),
             $container
@@ -57,7 +49,7 @@ class PipeMiddlewareTest extends TestCase
         $pipe_middleware = new PipeMiddleware(
             '/',
             BMiddleware::class,
-            $container
+            new HandlerFactory($container)
         );
 
         $request = (new ServerRequestFactory())->createServerRequest('GET', 'https://tests.com/to/test');

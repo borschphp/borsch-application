@@ -1,10 +1,8 @@
 <?php
-/**
- * @author debuss-a
- */
 
 namespace Borsch\Application;
 
+use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 /**
@@ -23,10 +21,25 @@ interface ApplicationInterface
      * @param string $middleware_or_path
      * @param string|string[] $middlewares
      */
-    public function pipe(string $middleware_or_path, $middlewares = null): void;
+    public function pipe(string $middleware_or_path, string|array|null $middlewares = null): void;
 
     /**
-     * Run the application.
+     * Respond with a ResponseInterface to a server request.
+     *
+     * @param ServerRequestInterface $server_request
+     * @return ResponseInterface
+     */
+    public function respond(ServerRequestInterface $server_request): ResponseInterface;
+
+    /**
+     * Emit the ResponseInterface to a client.
+     *
+     * @param ResponseInterface $response
+     */
+    public function emit(ResponseInterface $response): void;
+
+    /**
+     * Run the application (e.g.: gets the response then emits it).
      *
      * @param ServerRequestInterface $server_request
      */

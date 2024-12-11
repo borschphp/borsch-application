@@ -22,7 +22,7 @@ $container->set(TestHandler::class);
 $container->set(FastRouteRouter::class);
 $container->set(RouterInterface::class, FastRouteRouter::class)->cache(true);
 
-$app = new App(
+$app = new Application(
     new RequestHandler(),
     $container->get(RouterInterface::class),
     $container

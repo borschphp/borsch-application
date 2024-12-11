@@ -1,52 +1,39 @@
 <?php
-/**
- * @author debuss-a
- */
 
 namespace BorschTest\Application;
 
 require_once __DIR__.'/../../vendor/autoload.php';
 
-use Borsch\Application\App;
-use Borsch\Application\ApplicationInterface;
+use Borsch\Application\{Application, ApplicationInterface};
 use Borsch\Container\Container;
 use Borsch\RequestHandler\RequestHandler;
-use Borsch\Router\FastRouteRouter;
-use Borsch\Router\RouterInterface;
-use BorschTest\Middleware\DispatchMiddleware;
-use BorschTest\Middleware\NotFoundHandlerMiddleware;
-use BorschTest\Middleware\PipedMiddleware;
-use BorschTest\Middleware\RouteMiddleware;
-use BorschTest\Mockup\AMiddleware;
-use BorschTest\Mockup\BMiddleware;
-use BorschTest\Mockup\CMiddleware;
-use BorschTest\Mockup\TestHandler;
+use Borsch\Router\{FastRouteRouter, RouterInterface};
+use BorschTest\Middleware\{DispatchMiddleware, NotFoundHandlerMiddleware, PipedMiddleware, RouteMiddleware};
+use BorschTest\Mockup\{AMiddleware, BMiddleware, CMiddleware, TestHandler};
 use InvalidArgumentException;
 use Laminas\Diactoros\ServerRequestFactory;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\ServerRequestInterface;
 use RuntimeException;
 use stdClass;
 use TypeError;
 
 /**
- * @coversDefaultClass \Borsch\Application\App
- * @covers \Borsch\Application\App::__construct
- * @covers \Borsch\Application\App::runAndGetResponse
- * @covers \Borsch\Application\App::run
- * @uses \Borsch\Application\App
+ * @coversDefaultClass Application
+ * @covers Application::__construct
+ * @covers Application::runAndGetResponse
+ * @covers Application::run
+ * @uses Application
  * @uses \Borsch\Application\PipePathMiddleware
- * @uses \Borsch\Application\PipeMiddleware
- * @uses \Borsch\Application\LazyLoadingHandler
+ * @uses \Borsch\Application\Server\PipeMiddleware
+ * @uses \Borsch\Application\Server\LazyLoadingHandler
  * @uses \Borsch\RequestHandler\Emitter
- * @uses \Borsch\RequestHandler\RequestHandler
+ * @uses RequestHandler
  */
-class AppTest extends TestCase
+class ApplicationTest extends TestCase
 {
 
-    /** @var App */
-    protected $app;
+    protected Application $application;
 
     public function setUp(): void
     {
@@ -60,13 +47,8 @@ class AppTest extends TestCase
         $container->set(stdClass::class, function () {
             return new stdClass();
         });
-
-        $this->app = new class(new RequestHandler(), $container->get(RouterInterface::class), $container) extends App {
-            public function runAndGetResponse(ServerRequestInterface $server_request): ResponseInterface
-            {
-                return $this->request_handler->handle($server_request);
-            }
-        };
+        
+        $this->application = new Application(new RequestHandler(), $container->get(RouterInterface::class), $container);
     }
 
     /**
@@ -74,7 +56,7 @@ class AppTest extends TestCase
      */
     public function test__construct()
     {
-        $this->assertInstanceOf(ApplicationInterface::class, $this->app);
+        $this->assertInstanceOf(ApplicationInterface::class, $this->application);
     }
 
     /**
@@ -87,13 +69,13 @@ class AppTest extends TestCase
             'https://tests.com/to/delete'
         );
 
-        $this->app->pipe(RouteMiddleware::class);
-        $this->app->pipe(DispatchMiddleware::class);
-        $this->app->pipe(NotFoundHandlerMiddleware::class);
+        $this->application->pipe(RouteMiddleware::class);
+        $this->application->pipe(DispatchMiddleware::class);
+        $this->application->pipe(NotFoundHandlerMiddleware::class);
 
-        $this->app->delete('/to/delete', TestHandler::class);
+        $this->application->delete('/to/delete', TestHandler::class);
 
-        $response = $this->app->runAndGetResponse($server_request);
+        $response = $this->application->respond($server_request);
 
         $this->assertInstanceOf(ResponseInterface::class, $response);
         $this->assertNotEquals(404, $response->getStatusCode());
@@ -110,11 +92,11 @@ class AppTest extends TestCase
             'https://tests.com/to/delete'
         );
 
-        $this->app->pipe('/to', PipedMiddleware::class);
+        $this->application->pipe('/to', PipedMiddleware::class);
 
-        $this->app->delete('/to/delete', TestHandler::class);
+        $this->application->delete('/to/delete', TestHandler::class);
 
-        $response = $this->app->runAndGetResponse($server_request);
+        $response = $this->application->respond($server_request);
 
         $this->assertInstanceOf(ResponseInterface::class, $response);
         $this->assertEquals(PipedMiddleware::class.'::process', $response->getBody()->getContents());
@@ -130,16 +112,16 @@ class AppTest extends TestCase
             'https://tests.com/to/test'
         );
 
-        $this->app->pipe( '/to/', [
+        $this->application->pipe( '/to/', [
             AMiddleware::class,
             BMiddleware::class
         ]);
 
-        $this->app->pipe(RouteMiddleware::class);
-        $this->app->pipe(DispatchMiddleware::class);
-        $this->app->pipe(NotFoundHandlerMiddleware::class);
+        $this->application->pipe(RouteMiddleware::class);
+        $this->application->pipe(DispatchMiddleware::class);
+        $this->application->pipe(NotFoundHandlerMiddleware::class);
 
-        $response = $this->app->runAndGetResponse($server_request);
+        $response = $this->application->respond($server_request);
 
         $this->assertInstanceOf(ResponseInterface::class, $response);
         $this->assertEquals(BMiddleware::class.'::process', $response->getBody()->getContents());
@@ -153,7 +135,7 @@ class AppTest extends TestCase
     {
         $this->expectException(TypeError::class);
 
-        $this->app->pipe([
+        $this->application->pipe([
             RouteMiddleware::class,
             DispatchMiddleware::class,
             NotFoundHandlerMiddleware::class
@@ -170,13 +152,13 @@ class AppTest extends TestCase
             'https://tests.com/to/delete'
         );
 
-        $this->app->pipe(RouteMiddleware::class);
-        $this->app->pipe(DispatchMiddleware::class);
-        $this->app->pipe(NotFoundHandlerMiddleware::class);
+        $this->application->pipe(RouteMiddleware::class);
+        $this->application->pipe(DispatchMiddleware::class);
+        $this->application->pipe(NotFoundHandlerMiddleware::class);
 
-        $this->app->delete('/to/delete', TestHandler::class);
+        $this->application->delete('/to/delete', TestHandler::class);
 
-        $response = $this->app->runAndGetResponse($server_request);
+        $response = $this->application->respond($server_request);
 
         $this->assertInstanceOf(ResponseInterface::class, $response);
         $this->assertNotEquals(404, $response->getStatusCode());
@@ -193,13 +175,13 @@ class AppTest extends TestCase
             'https://tests.com/to/connect'
         );
 
-        $this->app->pipe(RouteMiddleware::class);
-        $this->app->pipe(DispatchMiddleware::class);
-        $this->app->pipe(NotFoundHandlerMiddleware::class);
+        $this->application->pipe(RouteMiddleware::class);
+        $this->application->pipe(DispatchMiddleware::class);
+        $this->application->pipe(NotFoundHandlerMiddleware::class);
 
-        $this->app->connect('/to/connect', TestHandler::class);
+        $this->application->connect('/to/connect', TestHandler::class);
 
-        $response = $this->app->runAndGetResponse($server_request);
+        $response = $this->application->respond($server_request);
 
         $this->assertInstanceOf(ResponseInterface::class, $response);
         $this->assertNotEquals(404, $response->getStatusCode());
@@ -216,13 +198,13 @@ class AppTest extends TestCase
             'https://tests.com/to/post'
         );
 
-        $this->app->pipe(RouteMiddleware::class);
-        $this->app->pipe(DispatchMiddleware::class);
-        $this->app->pipe(NotFoundHandlerMiddleware::class);
+        $this->application->pipe(RouteMiddleware::class);
+        $this->application->pipe(DispatchMiddleware::class);
+        $this->application->pipe(NotFoundHandlerMiddleware::class);
 
-        $this->app->post('/to/post', TestHandler::class);
+        $this->application->post('/to/post', TestHandler::class);
 
-        $response = $this->app->runAndGetResponse($server_request);
+        $response = $this->application->respond($server_request);
 
         $this->assertInstanceOf(ResponseInterface::class, $response);
         $this->assertNotEquals(404, $response->getStatusCode());
@@ -239,13 +221,13 @@ class AppTest extends TestCase
             'https://tests.com/to/put'
         );
 
-        $this->app->pipe(RouteMiddleware::class);
-        $this->app->pipe(DispatchMiddleware::class);
-        $this->app->pipe(NotFoundHandlerMiddleware::class);
+        $this->application->pipe(RouteMiddleware::class);
+        $this->application->pipe(DispatchMiddleware::class);
+        $this->application->pipe(NotFoundHandlerMiddleware::class);
 
-        $this->app->put('/to/put', TestHandler::class);
+        $this->application->put('/to/put', TestHandler::class);
 
-        $response = $this->app->runAndGetResponse($server_request);
+        $response = $this->application->respond($server_request);
 
         $this->assertInstanceOf(ResponseInterface::class, $response);
         $this->assertNotEquals(404, $response->getStatusCode());
@@ -262,13 +244,13 @@ class AppTest extends TestCase
             'https://tests.com/to/purge'
         );
 
-        $this->app->pipe(RouteMiddleware::class);
-        $this->app->pipe(DispatchMiddleware::class);
-        $this->app->pipe(NotFoundHandlerMiddleware::class);
+        $this->application->pipe(RouteMiddleware::class);
+        $this->application->pipe(DispatchMiddleware::class);
+        $this->application->pipe(NotFoundHandlerMiddleware::class);
 
-        $this->app->purge('/to/purge', TestHandler::class);
+        $this->application->purge('/to/purge', TestHandler::class);
 
-        $response = $this->app->runAndGetResponse($server_request);
+        $response = $this->application->respond($server_request);
 
         $this->assertInstanceOf(ResponseInterface::class, $response);
         $this->assertNotEquals(404, $response->getStatusCode());
@@ -285,13 +267,13 @@ class AppTest extends TestCase
             'https://tests.com/to/trace'
         );
 
-        $this->app->pipe(RouteMiddleware::class);
-        $this->app->pipe(DispatchMiddleware::class);
-        $this->app->pipe(NotFoundHandlerMiddleware::class);
+        $this->application->pipe(RouteMiddleware::class);
+        $this->application->pipe(DispatchMiddleware::class);
+        $this->application->pipe(NotFoundHandlerMiddleware::class);
 
-        $this->app->trace('/to/trace', TestHandler::class);
+        $this->application->trace('/to/trace', TestHandler::class);
 
-        $response = $this->app->runAndGetResponse($server_request);
+        $response = $this->application->respond($server_request);
 
         $this->assertInstanceOf(ResponseInterface::class, $response);
         $this->assertNotEquals(404, $response->getStatusCode());
@@ -308,13 +290,13 @@ class AppTest extends TestCase
             'https://tests.com/to/head'
         );
 
-        $this->app->pipe(RouteMiddleware::class);
-        $this->app->pipe(DispatchMiddleware::class);
-        $this->app->pipe(NotFoundHandlerMiddleware::class);
+        $this->application->pipe(RouteMiddleware::class);
+        $this->application->pipe(DispatchMiddleware::class);
+        $this->application->pipe(NotFoundHandlerMiddleware::class);
 
-        $this->app->head('/to/head', TestHandler::class);
+        $this->application->head('/to/head', TestHandler::class);
 
-        $response = $this->app->runAndGetResponse($server_request);
+        $response = $this->application->respond($server_request);
 
         $this->assertInstanceOf(ResponseInterface::class, $response);
         $this->assertNotEquals(404, $response->getStatusCode());
@@ -331,13 +313,13 @@ class AppTest extends TestCase
             'https://tests.com/to/any'
         );
 
-        $this->app->pipe(RouteMiddleware::class);
-        $this->app->pipe(DispatchMiddleware::class);
-        $this->app->pipe(NotFoundHandlerMiddleware::class);
+        $this->application->pipe(RouteMiddleware::class);
+        $this->application->pipe(DispatchMiddleware::class);
+        $this->application->pipe(NotFoundHandlerMiddleware::class);
 
-        $this->app->any('/to/any', TestHandler::class);
+        $this->application->any('/to/any', TestHandler::class);
 
-        $response = $this->app->runAndGetResponse($server_request);
+        $response = $this->application->respond($server_request);
 
         $this->assertInstanceOf(ResponseInterface::class, $response);
         $this->assertNotEquals(404, $response->getStatusCode());
@@ -354,13 +336,13 @@ class AppTest extends TestCase
             'https://tests.com/to/patch'
         );
 
-        $this->app->pipe(RouteMiddleware::class);
-        $this->app->pipe(DispatchMiddleware::class);
-        $this->app->pipe(NotFoundHandlerMiddleware::class);
+        $this->application->pipe(RouteMiddleware::class);
+        $this->application->pipe(DispatchMiddleware::class);
+        $this->application->pipe(NotFoundHandlerMiddleware::class);
 
-        $this->app->patch('/to/patch', TestHandler::class);
+        $this->application->patch('/to/patch', TestHandler::class);
 
-        $response = $this->app->runAndGetResponse($server_request);
+        $response = $this->application->respond($server_request);
 
         $this->assertInstanceOf(ResponseInterface::class, $response);
         $this->assertNotEquals(404, $response->getStatusCode());
@@ -377,13 +359,13 @@ class AppTest extends TestCase
             'https://tests.com/to/get'
         );
 
-        $this->app->pipe(RouteMiddleware::class);
-        $this->app->pipe(DispatchMiddleware::class);
-        $this->app->pipe(NotFoundHandlerMiddleware::class);
+        $this->application->pipe(RouteMiddleware::class);
+        $this->application->pipe(DispatchMiddleware::class);
+        $this->application->pipe(NotFoundHandlerMiddleware::class);
 
-        $this->app->get('/to/get', TestHandler::class);
+        $this->application->get('/to/get', TestHandler::class);
 
-        $response = $this->app->runAndGetResponse($server_request);
+        $response = $this->application->respond($server_request);
 
         $this->assertInstanceOf(ResponseInterface::class, $response);
         $this->assertNotEquals(404, $response->getStatusCode());
@@ -400,13 +382,13 @@ class AppTest extends TestCase
             'https://tests.com/to/options'
         );
 
-        $this->app->pipe(RouteMiddleware::class);
-        $this->app->pipe(DispatchMiddleware::class);
-        $this->app->pipe(NotFoundHandlerMiddleware::class);
+        $this->application->pipe(RouteMiddleware::class);
+        $this->application->pipe(DispatchMiddleware::class);
+        $this->application->pipe(NotFoundHandlerMiddleware::class);
 
-        $this->app->options('/to/options', TestHandler::class);
+        $this->application->options('/to/options', TestHandler::class);
 
-        $response = $this->app->runAndGetResponse($server_request);
+        $response = $this->application->respond($server_request);
 
         $this->assertInstanceOf(ResponseInterface::class, $response);
         $this->assertNotEquals(404, $response->getStatusCode());
@@ -423,13 +405,13 @@ class AppTest extends TestCase
             'https://tests.com/to/test'
         );
 
-        $this->app->pipe(RouteMiddleware::class);
-        $this->app->pipe(DispatchMiddleware::class);
-        $this->app->pipe(NotFoundHandlerMiddleware::class);
+        $this->application->pipe(RouteMiddleware::class);
+        $this->application->pipe(DispatchMiddleware::class);
+        $this->application->pipe(NotFoundHandlerMiddleware::class);
 
-        $this->app->match(['GET', 'POST', 'PUT'], '/to/test', TestHandler::class);
+        $this->application->match(['GET', 'POST', 'PUT'], '/to/test', TestHandler::class);
 
-        $response = $this->app->runAndGetResponse($server_request);
+        $response = $this->application->respond($server_request);
 
         $this->assertInstanceOf(ResponseInterface::class, $response);
         $this->assertNotEquals(404, $response->getStatusCode());
@@ -447,17 +429,17 @@ class AppTest extends TestCase
             'https://tests.com/to/get'
         );
 
-        $this->app->pipe(RouteMiddleware::class);
-        $this->app->pipe(DispatchMiddleware::class);
-        $this->app->pipe(NotFoundHandlerMiddleware::class);
+        $this->application->pipe(RouteMiddleware::class);
+        $this->application->pipe(DispatchMiddleware::class);
+        $this->application->pipe(NotFoundHandlerMiddleware::class);
 
-        $this->app->get('/to/get', [
+        $this->application->get('/to/get', [
             AMiddleware::class,
             CMiddleware::class,
             TestHandler::class
         ]);
 
-        $response = $this->app->runAndGetResponse($server_request);
+        $response = $this->application->respond($server_request);
 
         $this->assertInstanceOf(ResponseInterface::class, $response);
         $this->assertNotEquals(404, $response->getStatusCode());
@@ -475,17 +457,17 @@ class AppTest extends TestCase
             'https://tests.com/to/get'
         );
 
-        $this->app->pipe(RouteMiddleware::class);
-        $this->app->pipe(DispatchMiddleware::class);
-        $this->app->pipe(NotFoundHandlerMiddleware::class);
+        $this->application->pipe(RouteMiddleware::class);
+        $this->application->pipe(DispatchMiddleware::class);
+        $this->application->pipe(NotFoundHandlerMiddleware::class);
 
-        $this->app->get('/to/get', [
+        $this->application->get('/to/get', [
             AMiddleware::class,
             CMiddleware::class
         ]);
 
         $this->expectException(RuntimeException::class);
-        $this->app->runAndGetResponse($server_request);
+        $this->application->respond($server_request);
     }
 
     /**
@@ -499,18 +481,18 @@ class AppTest extends TestCase
             'https://tests.com/to/get'
         );
 
-        $this->app->pipe(RouteMiddleware::class);
-        $this->app->pipe(DispatchMiddleware::class);
-        $this->app->pipe(NotFoundHandlerMiddleware::class);
+        $this->application->pipe(RouteMiddleware::class);
+        $this->application->pipe(DispatchMiddleware::class);
+        $this->application->pipe(NotFoundHandlerMiddleware::class);
 
-        $this->app->get('/to/get', [
+        $this->application->get('/to/get', [
             AMiddleware::class,
             stdClass::class,
             CMiddleware::class
         ]);
 
         $this->expectException(InvalidArgumentException::class);
-        $this->app->runAndGetResponse($server_request);
+        $this->application->respond($server_request);
     }
 
     /**
@@ -518,16 +500,16 @@ class AppTest extends TestCase
      */
     public function testGroupedRoutesFound()
     {
-        $this->app->pipe(RouteMiddleware::class);
-        $this->app->pipe(DispatchMiddleware::class);
-        $this->app->pipe(NotFoundHandlerMiddleware::class);
+        $this->application->pipe(RouteMiddleware::class);
+        $this->application->pipe(DispatchMiddleware::class);
+        $this->application->pipe(NotFoundHandlerMiddleware::class);
 
-        $this->app->group('/grouped/path', function (App $app) {
+        $this->application->group('/grouped/path', function (Application $app) {
             $app->get('/to/get', TestHandler::class);
             $app->post('/to/post', TestHandler::class);
         });
 
-        $this->app->get('/to/get', [
+        $this->application->get('/to/get', [
             BMiddleware::class,
             TestHandler::class
         ]);
@@ -537,7 +519,7 @@ class AppTest extends TestCase
             'GET',
             'https://tests.com/grouped/path/to/get'
         );
-        $response = $this->app->runAndGetResponse($server_request);
+        $response = $this->application->respond($server_request);
 
         $this->assertInstanceOf(ResponseInterface::class, $response);
         $this->assertNotEquals(404, $response->getStatusCode());
@@ -549,16 +531,16 @@ class AppTest extends TestCase
      */
     public function testGroupedRoutesFoundPost()
     {
-        $this->app->pipe(RouteMiddleware::class);
-        $this->app->pipe(DispatchMiddleware::class);
-        $this->app->pipe(NotFoundHandlerMiddleware::class);
+        $this->application->pipe(RouteMiddleware::class);
+        $this->application->pipe(DispatchMiddleware::class);
+        $this->application->pipe(NotFoundHandlerMiddleware::class);
 
-        $this->app->group('/grouped/path', function (App $app) {
+        $this->application->group('/grouped/path', function (Application $app) {
             $app->get('/to/get', TestHandler::class);
             $app->post('/to/post', TestHandler::class);
         });
 
-        $this->app->get('/to/get', [
+        $this->application->get('/to/get', [
             BMiddleware::class,
             TestHandler::class
         ]);
@@ -568,7 +550,7 @@ class AppTest extends TestCase
             'POST',
             'https://tests.com/grouped/path/to/post'
         );
-        $response = $this->app->runAndGetResponse($server_request);
+        $response = $this->application->respond($server_request);
 
         $this->assertInstanceOf(ResponseInterface::class, $response);
         $this->assertNotEquals(404, $response->getStatusCode());
@@ -580,15 +562,15 @@ class AppTest extends TestCase
      */
     public function testGroupedRoutesSkipped()
     {
-        $this->app->pipe(RouteMiddleware::class);
-        $this->app->pipe(DispatchMiddleware::class);
-        $this->app->pipe(NotFoundHandlerMiddleware::class);
+        $this->application->pipe(RouteMiddleware::class);
+        $this->application->pipe(DispatchMiddleware::class);
+        $this->application->pipe(NotFoundHandlerMiddleware::class);
 
-        $this->app->group('/grouped/path', function (App $app) {
+        $this->application->group('/grouped/path', function (Application $app) {
             $app->get('/to/get', TestHandler::class);
         });
 
-        $this->app->get('/to/get', [
+        $this->application->get('/to/get', [
             BMiddleware::class,
             TestHandler::class
         ]);
@@ -597,7 +579,7 @@ class AppTest extends TestCase
             'GET',
             'https://tests.com/to/get'
         );
-        $response = $this->app->runAndGetResponse($server_request);
+        $response = $this->application->respond($server_request);
 
         $this->assertInstanceOf(ResponseInterface::class, $response);
         $this->assertEquals(200, $response->getStatusCode());
@@ -610,17 +592,17 @@ class AppTest extends TestCase
      */
     public function testGroupedGroupedRoutesFound()
     {
-        $this->app->pipe(RouteMiddleware::class);
-        $this->app->pipe(DispatchMiddleware::class);
-        $this->app->pipe(NotFoundHandlerMiddleware::class);
+        $this->application->pipe(RouteMiddleware::class);
+        $this->application->pipe(DispatchMiddleware::class);
+        $this->application->pipe(NotFoundHandlerMiddleware::class);
 
-        $this->app->group('/grouped/path', function (App $app) {
-            $app->group('/to', function (App $app) {
+        $this->application->group('/grouped/path', function (Application $app) {
+            $app->group('/to', function (Application $app) {
                 $app->get('/get', TestHandler::class);
             });
         });
 
-        $this->app->get('/to/get', [
+        $this->application->get('/to/get', [
             BMiddleware::class,
             TestHandler::class
         ]);
@@ -629,10 +611,33 @@ class AppTest extends TestCase
             'GET',
             'https://tests.com/grouped/path/to/get'
         );
-        $response = $this->app->runAndGetResponse($server_request);
+        $response = $this->application->respond($server_request);
 
         $this->assertInstanceOf(ResponseInterface::class, $response);
         $this->assertNotEquals(404, $response->getStatusCode());
+        $this->assertEquals(TestHandler::class.'::handle', $response->getBody()->getContents());
+    }
+
+    /**
+     * @covers ::respond
+     */
+    public function testRespond()
+    {
+        $server_request = (new ServerRequestFactory())->createServerRequest(
+            'GET',
+            'https://tests.com/to/get'
+        );
+
+        $this->application->pipe(RouteMiddleware::class);
+        $this->application->pipe(DispatchMiddleware::class);
+        $this->application->pipe(NotFoundHandlerMiddleware::class);
+
+        $this->application->get('/to/get', TestHandler::class);
+
+        $response = $this->application->respond($server_request);
+
+        $this->assertInstanceOf(ResponseInterface::class, $response);
+        $this->assertEquals(200, $response->getStatusCode());
         $this->assertEquals(TestHandler::class.'::handle', $response->getBody()->getContents());
     }
 
@@ -646,14 +651,14 @@ class AppTest extends TestCase
             'https://tests.com/to/get'
         );
 
-        $this->app->pipe(RouteMiddleware::class);
-        $this->app->pipe(DispatchMiddleware::class);
-        $this->app->pipe(NotFoundHandlerMiddleware::class);
+        $this->application->pipe(RouteMiddleware::class);
+        $this->application->pipe(DispatchMiddleware::class);
+        $this->application->pipe(NotFoundHandlerMiddleware::class);
 
-        $this->app->get('/to/get', TestHandler::class);
+        $this->application->get('/to/get', TestHandler::class);
 
         ob_start();
-        @$this->app->run($server_request);
+        @$this->application->run($server_request);
         $content = ob_get_clean();
 
         $this->assertEquals('BorschTest\Mockup\TestHandler::handle', $content);
