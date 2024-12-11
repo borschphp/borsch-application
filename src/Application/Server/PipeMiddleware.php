@@ -1,50 +1,33 @@
 <?php
-/**
- * @author debuss-a
- */
 
-namespace Borsch\Application;
+namespace Borsch\Application\Server;
 
+use Borsch\Application\Exception\ApplicationInvalidArgumentException;
+use Borsch\Application\Factory\HandlerFactory;
 use Psr\Container\{ContainerExceptionInterface, ContainerInterface, NotFoundExceptionInterface};
 use Psr\Http\Message\{ResponseInterface, ServerRequestInterface};
 use Psr\Http\Server\{MiddlewareInterface, RequestHandlerInterface};
 
-/**
- * Class PipeMiddleware
- * @package Borsch\Application
- */
 class PipeMiddleware implements MiddlewareInterface
 {
 
-    /** @var ContainerInterface */
     protected ContainerInterface $container;
 
-    /**
-     * PipeMiddleware constructor.
-     *
-     * @param string $path
-     * @param string $middleware
-     * @param ContainerInterface $container
-     */
     public function __construct(
         protected string $path,
         protected string $middleware,
-        ContainerInterface &$container
-    ) {
-        $this->container = &$container;
-    }
+        protected HandlerFactory $handler_factory
+    ) {}
 
     /**
-     * @param ServerRequestInterface $request
-     * @param RequestHandlerInterface $handler
-     * @return ResponseInterface
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
+     * @throws ApplicationInvalidArgumentException
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         if (str_starts_with($request->getUri()->getPath(), $this->path)) {
-            return $this->container->get($this->middleware)->process($request, $handler);
+            return $this->handler_factory->create($this->middleware)->process($request, $handler);
         }
 
         return $handler->handle($request);

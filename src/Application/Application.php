@@ -1,38 +1,32 @@
 <?php
-/**
- * @author debuss-a
- */
 
 namespace Borsch\Application;
 
+use Borsch\Application\Factory\HandlerFactory;
+use Borsch\Application\Server\HttpMethods;
+use Borsch\Application\Server\LazyLoadingHandler;
+use Borsch\Application\Server\PipeMiddleware;
 use Borsch\RequestHandler\{ApplicationRequestHandlerInterface, Emitter};
 use Borsch\Router\{Route, RouterInterface};
 use Psr\Container\ContainerInterface;
+use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
-/**
- * Class App
- * @package Borsch\Application
- */
-class App implements ApplicationInterface
+class Application implements ApplicationInterface
 {
 
-    /** @var string */
+    protected HandlerFactory $handler_factory;
     protected string $start_path = '';
 
-    /**
-     * @param ApplicationRequestHandlerInterface $request_handler
-     * @param RouterInterface $router
-     * @param ContainerInterface $container
-     */
     public function __construct(
         protected ApplicationRequestHandlerInterface $request_handler,
         protected RouterInterface $router,
         protected ContainerInterface $container
-    ) {}
+    ) {
+        $this->handler_factory = new HandlerFactory($container);
+    }
 
     /**
-     * @param string $middleware_or_path
      * @param null|string|string[] $middlewares
      */
     public function pipe(string $middleware_or_path, $middlewares = null): void
@@ -42,26 +36,27 @@ class App implements ApplicationInterface
 
         foreach ((array)$middlewares as $middleware) {
             $this->request_handler->middleware(
-                new PipeMiddleware($path, $middleware, $this->container)
+                new PipeMiddleware($path, $middleware, $this->handler_factory)
             );
         }
     }
 
-    /**
-     * @param ServerRequestInterface $server_request
-     */
-    public function run(ServerRequestInterface $server_request): void
+    public function respond(ServerRequestInterface $server_request): ResponseInterface
     {
-        $response = $this->request_handler->handle($server_request);
+        return $this->request_handler->handle($server_request);
+    }
 
+    public function emit(ResponseInterface $response): void
+    {
         $emitter = new Emitter();
         $emitter->emit($response);
     }
 
-    /**
-     * @param string $start_path
-     * @param callable $proxy
-     */
+    public function run(ServerRequestInterface $server_request): void
+    {
+        $this->emit($this->respond($server_request));
+    }
+
     public function group(string $start_path, callable $proxy): void
     {
         $prev_start_path = $this->start_path;
@@ -73,9 +68,7 @@ class App implements ApplicationInterface
     }
 
     /**
-     * @param string $path
      * @param string|string[] $handler
-     * @param string|null $name
      */
     public function get(string $path, $handler, ?string $name = null): void
     {
@@ -83,9 +76,7 @@ class App implements ApplicationInterface
     }
 
     /**
-     * @param string $path
      * @param string|string[] $handler
-     * @param string|null $name
      */
     public function post(string $path, $handler, ?string $name = null): void
     {
@@ -93,9 +84,7 @@ class App implements ApplicationInterface
     }
 
     /**
-     * @param string $path
      * @param string|string[] $handler
-     * @param string|null $name
      */
     public function put(string $path, $handler, ?string $name = null): void
     {
@@ -103,9 +92,7 @@ class App implements ApplicationInterface
     }
 
     /**
-     * @param string $path
      * @param string|string[] $handler
-     * @param string|null $name
      */
     public function delete(string $path, $handler, ?string $name = null): void
     {
@@ -113,9 +100,7 @@ class App implements ApplicationInterface
     }
 
     /**
-     * @param string $path
      * @param string|string[] $handler
-     * @param string|null $name
      */
     public function patch(string $path, $handler, ?string $name = null): void
     {
@@ -123,9 +108,7 @@ class App implements ApplicationInterface
     }
 
     /**
-     * @param string $path
      * @param string|string[] $handler
-     * @param string|null $name
      */
     public function head(string $path, $handler, ?string $name = null): void
     {
@@ -133,9 +116,7 @@ class App implements ApplicationInterface
     }
 
     /**
-     * @param string $path
      * @param string|string[] $handler
-     * @param string|null $name
      */
     public function options(string $path, $handler, ?string $name = null): void
     {
@@ -143,9 +124,7 @@ class App implements ApplicationInterface
     }
 
     /**
-     * @param string $path
      * @param string|string[] $handler
-     * @param string|null $name
      */
     public function purge(string $path, $handler, ?string $name = null): void
     {
@@ -153,9 +132,7 @@ class App implements ApplicationInterface
     }
 
     /**
-     * @param string $path
      * @param string|string[] $handler
-     * @param string|null $name
      */
     public function trace(string $path, $handler, ?string $name = null): void
     {
@@ -163,9 +140,7 @@ class App implements ApplicationInterface
     }
 
     /**
-     * @param string $path
      * @param string|string[] $handler
-     * @param string|null $name
      */
     public function connect(string $path, $handler, ?string $name = null): void
     {
@@ -173,9 +148,7 @@ class App implements ApplicationInterface
     }
 
     /**
-     * @param string $path
      * @param string|string[] $handler
-     * @param string|null $name
      */
     public function any(string $path, $handler, ?string $name = null): void
     {
@@ -183,10 +156,8 @@ class App implements ApplicationInterface
     }
 
     /**
-     * @param HttpMethods|HttpMethods[]|string $methods
-     * @param string $path
+     * @param HttpMethods|HttpMethods[]|string|string[] $methods
      * @param string|string[] $handler
-     * @param string|null $name
      */
     public function match(HttpMethods|array|string $methods, string $path, string|array $handler, ?string $name = null): void
     {
@@ -200,7 +171,7 @@ class App implements ApplicationInterface
         $this->router->addRoute(new Route(
             $methods,
             $this->start_path.$path,
-            new LazyLoadingHandler($handler, $this->container),
+            new LazyLoadingHandler($handler, $this->handler_factory),
             $name
         ));
     }
