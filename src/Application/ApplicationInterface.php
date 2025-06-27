@@ -2,6 +2,7 @@
 
 namespace Borsch\Application;
 
+use Borsch\Router\RouteInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -143,4 +144,11 @@ interface ApplicationInterface
      * @param string|null $name
      */
     public function any(string $path, string $handler, ?string $name = null): void;
+
+    /**
+     * Add multiple routes at once to the application router instance.
+     *
+     * @param RouteInterface[] $routes
+     */
+    public function addRoutes(array $routes): void;
 }

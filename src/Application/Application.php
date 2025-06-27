@@ -3,14 +3,11 @@
 namespace Borsch\Application;
 
 use Borsch\Application\Factory\HandlerFactory;
-use Borsch\Application\Server\HttpMethods;
-use Borsch\Application\Server\LazyLoadingHandler;
-use Borsch\Application\Server\PipeMiddleware;
+use Borsch\Application\Server\{HttpMethods, LazyLoadingHandler, PipeMiddleware};
 use Borsch\RequestHandler\{RequestHandlerInterface, Emitter};
 use Borsch\Router\{Route, RouterInterface};
 use Psr\Container\ContainerInterface;
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\{ResponseInterface, ServerRequestInterface};
 
 class Application implements ApplicationInterface
 {
@@ -174,5 +171,12 @@ class Application implements ApplicationInterface
             new LazyLoadingHandler($handler, $this->handler_factory),
             $name
         ));
+    }
+
+    public function addRoutes(array $routes): void
+    {
+        foreach ($routes as $route) {
+            $this->router->addRoute($route);
+        }
     }
 }

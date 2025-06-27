@@ -7,7 +7,7 @@ require_once __DIR__.'/../../vendor/autoload.php';
 use Borsch\Application\{Application, ApplicationInterface};
 use Borsch\Container\Container;
 use Borsch\RequestHandler\RequestHandler;
-use Borsch\Router\{FastRouteRouter, RouterInterface};
+use Borsch\Router\{FastRouteRouter, Route, RouterInterface};
 use BorschTest\Middleware\{DispatchMiddleware, NotFoundHandlerMiddleware, PipedMiddleware, RouteMiddleware};
 use BorschTest\Mockup\{AMiddleware, BMiddleware, CMiddleware, TestHandler};
 use InvalidArgumentException;
@@ -662,5 +662,33 @@ class ApplicationTest extends TestCase
         $content = ob_get_clean();
 
         $this->assertEquals('BorschTest\Mockup\TestHandler::handle', $content);
+    }
+
+    public function testAddRoute00()
+    {
+        $routes = [
+            new Route(['GET'], '/a/b/c', new TestHandler()),
+            new Route(['GET'], '/z/y/x', new TestHandler()),
+            new Route(['GET'], '/air/plane', new TestHandler()),
+            new Route(['GET'], '/steam/bot', new TestHandler()),
+            new Route(['GET'], '/m/n/o', new TestHandler()),
+        ];
+
+        $this->application->pipe(RouteMiddleware::class);
+        $this->application->pipe(DispatchMiddleware::class);
+        $this->application->pipe(NotFoundHandlerMiddleware::class);
+
+        $this->application->addRoutes($routes);
+
+        $server_request = (new ServerRequestFactory())->createServerRequest(
+            'GET',
+            'https://tests.com/air/plane'
+        );
+
+        $response = $this->application->respond($server_request);
+
+        $this->assertInstanceOf(ResponseInterface::class, $response);
+        $this->assertNotEquals(404, $response->getStatusCode());
+        $this->assertEquals(TestHandler::class.'::handle', $response->getBody()->getContents());
     }
 }
