@@ -2,7 +2,7 @@
 
 namespace BorschTest\Application;
 
-use Borsch\Application;
+use Borsch\Application\Application;
 use Borsch\Container\Container;
 use Borsch\RequestHandler\RequestHandler;
 use Borsch\Router\{FastRouteRouter, RouterInterface};

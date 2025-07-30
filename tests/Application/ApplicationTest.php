@@ -4,7 +4,7 @@ namespace BorschTest\Application;
 
 require_once __DIR__.'/../../vendor/autoload.php';
 
-use Borsch\Application\{Borsch\Application, Borsch\ApplicationInterface};
+use Borsch\Application\{Application, ApplicationInterface};
 use Borsch\Container\Container;
 use Borsch\RequestHandler\RequestHandler;
 use Borsch\Router\{FastRouteRouter, Route, RouterInterface};
@@ -19,11 +19,11 @@ use stdClass;
 use TypeError;
 
 /**
- * @coversDefaultClass \Borsch\Application
- * @covers \Borsch\Application::__construct
- * @covers \Borsch\Application::runAndGetResponse
- * @covers \Borsch\Application::run
- * @uses \Borsch\Application
+ * @coversDefaultClass Application
+ * @covers Application::__construct
+ * @covers Application::runAndGetResponse
+ * @covers Application::run
+ * @uses Application
  * @uses \Borsch\Application\PipePathMiddleware
  * @uses \Borsch\Application\Server\PipeMiddleware
  * @uses \Borsch\Application\Server\LazyLoadingHandler
@@ -33,7 +33,7 @@ use TypeError;
 class ApplicationTest extends TestCase
 {
 
-    protected \Borsch\Application $application;
+    protected Application $application;
 
     public function setUp(): void
     {
@@ -48,7 +48,7 @@ class ApplicationTest extends TestCase
             return new stdClass();
         });
         
-        $this->application = new \Borsch\Application(new RequestHandler(), $container->get(RouterInterface::class), $container);
+        $this->application = new Application(new RequestHandler(), $container->get(RouterInterface::class), $container);
     }
 
     /**
@@ -56,7 +56,7 @@ class ApplicationTest extends TestCase
      */
     public function test__construct()
     {
-        $this->assertInstanceOf(\Borsch\ApplicationInterface::class, $this->application);
+        $this->assertInstanceOf(ApplicationInterface::class, $this->application);
     }
 
     /**
@@ -504,7 +504,7 @@ class ApplicationTest extends TestCase
         $this->application->pipe(DispatchMiddleware::class);
         $this->application->pipe(NotFoundHandlerMiddleware::class);
 
-        $this->application->group('/grouped/path', function (\Borsch\Application $app) {
+        $this->application->group('/grouped/path', function (Application $app) {
             $app->get('/to/get', TestHandler::class);
             $app->post('/to/post', TestHandler::class);
         });
@@ -535,7 +535,7 @@ class ApplicationTest extends TestCase
         $this->application->pipe(DispatchMiddleware::class);
         $this->application->pipe(NotFoundHandlerMiddleware::class);
 
-        $this->application->group('/grouped/path', function (\Borsch\Application $app) {
+        $this->application->group('/grouped/path', function (Application $app) {
             $app->get('/to/get', TestHandler::class);
             $app->post('/to/post', TestHandler::class);
         });
@@ -566,7 +566,7 @@ class ApplicationTest extends TestCase
         $this->application->pipe(DispatchMiddleware::class);
         $this->application->pipe(NotFoundHandlerMiddleware::class);
 
-        $this->application->group('/grouped/path', function (\Borsch\Application $app) {
+        $this->application->group('/grouped/path', function (Application $app) {
             $app->get('/to/get', TestHandler::class);
         });
 
@@ -596,8 +596,8 @@ class ApplicationTest extends TestCase
         $this->application->pipe(DispatchMiddleware::class);
         $this->application->pipe(NotFoundHandlerMiddleware::class);
 
-        $this->application->group('/grouped/path', function (\Borsch\Application $app) {
-            $app->group('/to', function (\Borsch\Application $app) {
+        $this->application->group('/grouped/path', function (Application $app) {
+            $app->group('/to', function (Application $app) {
                 $app->get('/get', TestHandler::class);
             });
         });

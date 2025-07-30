@@ -2,7 +2,7 @@
 
 namespace BorschTest\Application;
 
-use Borsch\Application\{Borsch\Application};
+use Borsch\Application\Application;
 use Borsch\Container\Container;
 use Borsch\Application\Factory\HandlerFactory;
 use Borsch\RequestHandler\RequestHandler;
@@ -16,12 +16,12 @@ use PHPUnit\Framework\TestCase;
 /**
  * @coversDefaultClass \Borsch\Application\Server\PipeMiddleware
  * @covers \Borsch\Application\Server\PipeMiddleware::__construct
- * @uses \Borsch\Application
+ * @uses Application
  */
 class PipeMiddlewareTest extends TestCase
 {
 
-    protected \Borsch\Application $application;
+    protected Application $application;
 
     public function setUp(): void
     {
@@ -35,7 +35,7 @@ class PipeMiddlewareTest extends TestCase
         $container->set(AMiddleware::class);
         $container->set(CMiddleware::class);
 
-        $this->application = new \Borsch\Application(
+        $this->application = new Application(
             new RequestHandler(),
             $container->get(RouterInterface::class),
             $container
