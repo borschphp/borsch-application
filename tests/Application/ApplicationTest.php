@@ -7,7 +7,9 @@ require_once __DIR__.'/../../vendor/autoload.php';
 use Borsch\Application\{Application, ApplicationInterface};
 use Borsch\Container\Container;
 use Borsch\RequestHandler\RequestHandler;
-use Borsch\Router\{FastRouteRouter, Route, RouterInterface};
+use Borsch\Router\Contract\RouterInterface;
+use Borsch\Router\FastRouteRouter;
+use Borsch\Router\Route;
 use BorschTest\Middleware\{DispatchMiddleware, NotFoundHandlerMiddleware, PipedMiddleware, RouteMiddleware};
 use BorschTest\Mockup\{AMiddleware, BMiddleware, CMiddleware, TestHandler};
 use InvalidArgumentException;
@@ -44,10 +46,8 @@ class ApplicationTest extends TestCase
         $container->set(TestHandler::class);
         $container->set(FastRouteRouter::class);
         $container->set(RouterInterface::class, FastRouteRouter::class)->cache(true);
-        $container->set(stdClass::class, function () {
-            return new stdClass();
-        });
-        
+        $container->set(stdClass::class, fn() => new stdClass());
+
         $this->application = new Application(new RequestHandler(), $container->get(RouterInterface::class), $container);
     }
 

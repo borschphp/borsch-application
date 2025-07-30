@@ -4,7 +4,8 @@ namespace Borsch\Application;
 
 use Borsch\Application\Factory\HandlerFactory;
 use Borsch\RequestHandler\{Emitter, RequestHandlerInterface};
-use Borsch\Router\{Route, RouterInterface};
+use Borsch\Router\Contract\RouterInterface;
+use Borsch\Router\Route;
 use Borsch\Application\Server\{LazyLoadingHandler};
 use Borsch\Application\Server\HttpMethods;
 use Borsch\Application\Server\PipeMiddleware;
@@ -19,8 +20,8 @@ class Application implements ApplicationInterface
 
     public function __construct(
         protected RequestHandlerInterface $request_handler,
-        protected RouterInterface         $router,
-        protected ContainerInterface      $container
+        protected RouterInterface $router,
+        protected ContainerInterface $container
     ) {
         $this->handler_factory = new HandlerFactory($container);
     }
