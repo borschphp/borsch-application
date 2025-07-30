@@ -2,9 +2,9 @@
 
 namespace BorschTest\Application;
 
+use Borsch\Container\Container;
 use Borsch\Application\Exception\ApplicationInvalidArgumentException;
 use Borsch\Application\Factory\HandlerFactory;
-use Borsch\Container\Container;
 use Borsch\Router\FastRouteRouter;
 use Borsch\Router\RouterInterface;
 use BorschTest\Middleware\DispatchMiddleware;

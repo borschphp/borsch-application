@@ -3,9 +3,11 @@
 namespace Borsch\Application;
 
 use Borsch\Application\Factory\HandlerFactory;
-use Borsch\Application\Server\{HttpMethods, LazyLoadingHandler, PipeMiddleware};
-use Borsch\RequestHandler\{RequestHandlerInterface, Emitter};
+use Borsch\RequestHandler\{Emitter, RequestHandlerInterface};
 use Borsch\Router\{Route, RouterInterface};
+use Borsch\Application\Server\{LazyLoadingHandler};
+use Borsch\Application\Server\HttpMethods;
+use Borsch\Application\Server\PipeMiddleware;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\{ResponseInterface, ServerRequestInterface};
 

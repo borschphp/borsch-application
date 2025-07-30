@@ -13,7 +13,7 @@ interface ApplicationInterface
 {
 
     /**
-     * Pipe a middleware to the pipeline.
+     * Pipe middleware to the pipeline.
      * If two parameters are present, the first one must be a string representing a path to segregate
      * with the second one.
      * The middleware will be fetched from the container, therefore only give the container identifier.

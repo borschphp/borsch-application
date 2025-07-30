@@ -2,10 +2,12 @@
 
 namespace BorschTest\Application;
 
-use Borsch\Application\{Application, Factory\HandlerFactory, Server\PipeMiddleware};
+use Borsch\Application\{Borsch\Application};
 use Borsch\Container\Container;
+use Borsch\Application\Factory\HandlerFactory;
 use Borsch\RequestHandler\RequestHandler;
 use Borsch\Router\{FastRouteRouter, RouterInterface};
+use Borsch\Application\Server\PipeMiddleware;
 use BorschTest\Middleware\{DispatchMiddleware, NotFoundHandlerMiddleware, RouteMiddleware};
 use BorschTest\Mockup\{AMiddleware, BMiddleware, CMiddleware, TestHandler};
 use Laminas\Diactoros\ServerRequestFactory;
@@ -14,12 +16,12 @@ use PHPUnit\Framework\TestCase;
 /**
  * @coversDefaultClass \Borsch\Application\Server\PipeMiddleware
  * @covers \Borsch\Application\Server\PipeMiddleware::__construct
- * @uses Application
+ * @uses \Borsch\Application
  */
 class PipeMiddlewareTest extends TestCase
 {
 
-    protected Application $application;
+    protected \Borsch\Application $application;
 
     public function setUp(): void
     {
@@ -33,7 +35,7 @@ class PipeMiddlewareTest extends TestCase
         $container->set(AMiddleware::class);
         $container->set(CMiddleware::class);
 
-        $this->application = new Application(
+        $this->application = new \Borsch\Application(
             new RequestHandler(),
             $container->get(RouterInterface::class),
             $container
