@@ -14,7 +14,7 @@
     "psr/log": "^1.0 || ^2.0 || ^3.0",
     "psr/container": "^1.0 || ^2.0",
     "borschphp/requesthandler": "^2",
-    "borschphp/router": "^2"
+    "borschphp/router": "^3"
   },
   "require-dev": {
     "borschphp/container": "^1",
@@ -24,7 +24,7 @@
   },
   "autoload": {
     "psr-4": {
-      "Borsch\\": "src/"
+      "Borsch\\Application\\": "src/"
     }
   },
   "autoload-dev": {

@@ -2,10 +2,12 @@
 
 namespace BorschTest\Application;
 
-use Borsch\Application\{Application, Factory\HandlerFactory, Server\PipeMiddleware};
+use Borsch\Application\Application;
 use Borsch\Container\Container;
+use Borsch\Application\Factory\HandlerFactory;
 use Borsch\RequestHandler\RequestHandler;
 use Borsch\Router\{FastRouteRouter, RouterInterface};
+use Borsch\Application\Server\PipeMiddleware;
 use BorschTest\Middleware\{DispatchMiddleware, NotFoundHandlerMiddleware, RouteMiddleware};
 use BorschTest\Mockup\{AMiddleware, BMiddleware, CMiddleware, TestHandler};
 use Laminas\Diactoros\ServerRequestFactory;

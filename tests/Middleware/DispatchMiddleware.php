@@ -2,7 +2,7 @@
 
 namespace BorschTest\Middleware;
 
-use Borsch\Router\RouteResultInterface;
+use Borsch\Router\Contract\RouteResultInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
